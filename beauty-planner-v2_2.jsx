@@ -98,12 +98,19 @@ const buildSchedule = (members, stylists, readyBy, durations) => {
   [...new Set([...hairSt,...mkupSt].map(s=>s.id))].forEach(id=>{
     tracks[id]={ stylist:all.find(s=>s.id===id), slots:[], nextEnd:readyByMins };
   });
-  const pickBest=(stList)=>stList.reduce((best,s)=>tracks[s.id].nextEnd>tracks[best.id].nextEnd?s:best,stList[0]);
+  // Track per-member busy times to prevent personal overlap
+  const memberBusy={};
+  const pickFor=(stList,m)=>{
+    // Prefer assigned stylist if they're in the list
+    if(m.stylistId){const pref=stList.find(s=>s.id===m.stylistId);if(pref&&tracks[pref.id]) return pref;}
+    return stList.reduce((best,s)=>tracks[s.id].nextEnd>tracks[best.id].nextEnd?s:best,stList[0]);
+  };
   for (const m of sorted.filter(m=>m.services==="hair"||m.services==="both")) {
-    const dur=m.hairMins||( m.role==="bride"?brideHair:defHair), st=pickBest(hairSt);
+    const dur=m.hairMins||(m.role==="bride"?brideHair:defHair), st=pickFor(hairSt,m);
     const end=tracks[st.id].nextEnd, start=end-dur;
     tracks[st.id].slots.push({memberId:m.id,name:m.name,role:m.role,type:"hair",start,end,dur});
     tracks[st.id].nextEnd=start;
+    memberBusy[m.id]={start,end};
   }
   Object.keys(tracks).forEach(id=>{
     const slots=tracks[id].slots;
@@ -114,10 +121,14 @@ const buildSchedule = (members, stylists, readyBy, durations) => {
     }
   });
   for (const m of sorted.filter(m=>m.services==="makeup"||m.services==="both")) {
-    const dur=m.makeupMins||(m.role==="bride"?brideMakeup:defMakeup), st=pickBest(mkupSt);
-    const end=tracks[st.id].nextEnd, start=end-dur;
+    const dur=m.makeupMins||(m.role==="bride"?brideMakeup:defMakeup), st=pickFor(mkupSt,m);
+    let end=tracks[st.id].nextEnd;
+    // If this person has a hair slot, makeup must end before their hair starts
+    const busy=memberBusy[m.id];
+    if(busy&&end>busy.start) end=busy.start;
+    const start=end-dur;
     tracks[st.id].slots.push({memberId:m.id,name:m.name,role:m.role,type:"makeup",start,end,dur});
-    tracks[st.id].nextEnd=start;
+    tracks[st.id].nextEnd=Math.min(tracks[st.id].nextEnd,start);
   }
   Object.values(tracks).forEach(t=>t.slots.sort((a,b)=>a.start-b.start));
   const live=Object.values(tracks).filter(t=>t.slots.length);
