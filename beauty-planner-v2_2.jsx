@@ -232,7 +232,27 @@ const blankM = () => ({id:uid(),name:"",role:"bridesmaid",services:"both",stylis
 
 const MemberForm = ({m,stylists,onChange,onSave,onRemove}) => {
   const [urlIn,setUrlIn]=useState("");
+  const [uploading,setUploading]=useState(false);
+  const fileRef=useRef(null);
   const addUrl=()=>{const u=urlIn.trim();if(u&&!m.urls.includes(u)){onChange("urls",[...m.urls,u]);setUrlIn("");}};
+  const handleUpload=async(e)=>{
+    const files=Array.from(e.target.files||[]);
+    if(!files.length) return;
+    setUploading(true);
+    const newUrls=[];
+    for(const file of files){
+      const ext=file.name.split(".").pop()||"jpg";
+      const path=`${m.id}/${uid()}.${ext}`;
+      const {error}=await supabase.storage.from("inspo").upload(path,file,{contentType:file.type});
+      if(!error){
+        const {data}=supabase.storage.from("inspo").getPublicUrl(path);
+        if(data?.publicUrl) newUrls.push(data.publicUrl);
+      }
+    }
+    if(newUrls.length) onChange("urls",[...m.urls,...newUrls]);
+    setUploading(false);
+    if(fileRef.current) fileRef.current.value="";
+  };
   return (
     <div className="fade-in" style={{background:"#FFFCF8",border:"1.5px solid #B8956A",borderRadius:10,padding:"18px 20px",marginBottom:10}}>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>
@@ -240,10 +260,12 @@ const MemberForm = ({m,stylists,onChange,onSave,onRemove}) => {
         <Field label="Role"><select value={m.role} onChange={e=>onChange("role",e.target.value)}>{ROLES.map(r=><option key={r.v} value={r.v}>{r.l}</option>)}</select></Field>
         <Field label="Services Needed"><select value={m.services} onChange={e=>onChange("services",e.target.value)}>{SERVICES.map(s=><option key={s.v} value={s.v}>{s.l}</option>)}</select></Field>
         {stylists.length>0&&<Field label="Preferred Stylist"><select value={m.stylistId} onChange={e=>onChange("stylistId",e.target.value)}><option value="">— Auto-assign —</option>{stylists.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>}
-        <Field label="Photo Inspo URLs" col="1/-1">
+        <Field label="Photo Inspiration" col="1/-1">
           <div style={{display:"flex",gap:8,marginBottom:m.urls.length?10:0}}>
-            <input value={urlIn} onChange={e=>setUrlIn(e.target.value)} placeholder="Paste Pinterest, Instagram save, or direct image URL" onKeyDown={e=>e.key==="Enter"&&addUrl()} style={{flex:1}}/>
-            <Btn size="sm" onClick={addUrl}>Add</Btn>
+            <input value={urlIn} onChange={e=>setUrlIn(e.target.value)} placeholder="Paste URL or upload photos below" onKeyDown={e=>e.key==="Enter"&&addUrl()} style={{flex:1}}/>
+            <Btn size="sm" onClick={addUrl}>Add URL</Btn>
+            <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleUpload} style={{display:"none"}}/>
+            <Btn size="sm" variant="secondary" onClick={()=>fileRef.current?.click()} disabled={uploading}>{uploading?"Uploading…":"Upload"}</Btn>
           </div>
           {m.urls.length>0&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{m.urls.map(u=><div key={u} style={{position:"relative"}}><InspoThumb url={u}/><button onClick={()=>onChange("urls",m.urls.filter(x=>x!==u))} style={{position:"absolute",top:-6,right:-6,width:18,height:18,borderRadius:"50%",background:"#C06060",color:"#fff",border:"none",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button></div>)}</div>}
         </Field>
