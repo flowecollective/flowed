@@ -748,7 +748,7 @@ const Step4 = ({members,stylists,details}) => {
       <div style={{textAlign:"center",marginBottom:22}}>
         <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,fontStyle:"italic",marginBottom:4}}>The Timeline</h2>
       </div>
-      {days.length>1&&<div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:22}}>
+      {days.length>1&&<div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:22,flexWrap:"wrap"}}>
         {days.map(day=>(
           <button key={day.id} onClick={()=>setActiveDay(day.id)} style={{fontFamily:"'Jost',sans-serif",fontSize:12,letterSpacing:".06em",color:activeDay===day.id?"#fff":"#6B6058",background:activeDay===day.id?"#1C1815":"#fff",border:`1px solid ${activeDay===day.id?"#1C1815":"#E0D8CF"}`,borderRadius:20,padding:"8px 20px",cursor:"pointer",transition:"all .15s",whiteSpace:"nowrap"}}>
             {day.label}{day.date?` · ${new Date(day.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}`:""}
