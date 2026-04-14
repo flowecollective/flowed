@@ -199,14 +199,35 @@ const ServicePill = ({svc}) => {
   const c=colors[svc]||colors.both;
   return <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:11,fontWeight:500,background:c.bg,color:c.color}}><span style={{fontSize:9}}>{s.icon}</span>{s.l}</span>;
 };
-const InspoThumb = ({url}) => {
+const Lightbox = ({urls,index,onClose}) => {
+  const [cur,setCur]=useState(index);
+  const touchRef=useRef(null);
+  const prev=()=>setCur(c=>(c-1+urls.length)%urls.length);
+  const next=()=>setCur(c=>(c+1)%urls.length);
+  useEffect(()=>{const h=(e)=>{if(e.key==="ArrowLeft")prev();if(e.key==="ArrowRight")next();if(e.key==="Escape")onClose();};window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);},[]);
+  const onTouchStart=(e)=>{touchRef.current=e.touches[0].clientX;};
+  const onTouchEnd=(e)=>{if(touchRef.current===null) return;const diff=e.changedTouches[0].clientX-touchRef.current;if(Math.abs(diff)>50){diff<0?next():prev();}touchRef.current=null;};
+  return (
+    <div className="fade-in" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(28,24,21,.9)",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <button onClick={onClose} style={{position:"absolute",top:16,right:20,background:"none",border:"none",color:"#fff",fontSize:28,cursor:"pointer",zIndex:10,opacity:.7}}>×</button>
+      {urls.length>1&&<button onClick={prev} style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,.15)",border:"none",color:"#fff",fontSize:24,width:40,height:40,borderRadius:"50%",cursor:"pointer",zIndex:10}}>‹</button>}
+      <img src={urls[cur]} alt="inspo" onClick={onClose} style={{maxWidth:"90vw",maxHeight:"80vh",borderRadius:10,objectFit:"contain",boxShadow:"0 8px 40px rgba(0,0,0,.4)",cursor:"zoom-out"}}/>
+      {urls.length>1&&<button onClick={next} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,.15)",border:"none",color:"#fff",fontSize:24,width:40,height:40,borderRadius:"50%",cursor:"pointer",zIndex:10}}>›</button>}
+      {urls.length>1&&<div style={{position:"absolute",bottom:20,left:"50%",transform:"translateX(-50%)",display:"flex",gap:6}}>
+        {urls.map((_,i)=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:i===cur?"#fff":"rgba(255,255,255,.35)",transition:"background .2s"}}/>)}
+      </div>}
+    </div>
+  );
+};
+
+const InspoThumb = ({url,urls}) => {
   const [err,setErr]=useState(false);
   const [open,setOpen]=useState(false);
+  const allUrls=urls||[url];
+  const idx=allUrls.indexOf(url);
   return <>
     <div onClick={()=>!err&&setOpen(true)} style={{width:56,height:56,borderRadius:6,overflow:"hidden",background:"#F0EAE2",flexShrink:0,position:"relative",cursor:err?"default":"zoom-in"}}>{!err?<img src={url} alt="inspo" onError={()=>setErr(true)} style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<a href={url} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%",fontSize:22,textDecoration:"none"}}>🔗</a>}</div>
-    {open&&<div onClick={()=>setOpen(false)} className="fade-in" style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(28,24,21,.85)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"zoom-out",padding:24}}>
-      <img src={url} alt="inspo" style={{maxWidth:"90vw",maxHeight:"85vh",borderRadius:10,objectFit:"contain",boxShadow:"0 8px 40px rgba(0,0,0,.4)"}}/>
-    </div>}
+    {open&&<Lightbox urls={allUrls} index={idx>=0?idx:0} onClose={()=>setOpen(false)}/>}
   </>;
 };
 const Toggle = ({value, onChange, label}) => (
@@ -387,7 +408,7 @@ const MemberForm = ({m,stylists,days,onChange,onSave,onRemove}) => {
             <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleUpload} style={{display:"none"}}/>
             <Btn size="sm" variant="secondary" onClick={()=>fileRef.current?.click()} disabled={uploading}>{uploading?"Uploading…":"Upload"}</Btn>
           </div>
-          {m.urls.length>0&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{m.urls.map(u=><div key={u} style={{position:"relative"}}><InspoThumb url={u}/><button onClick={()=>onChange("urls",m.urls.filter(x=>x!==u))} style={{position:"absolute",top:-6,right:-6,width:18,height:18,borderRadius:"50%",background:"#C06060",color:"#fff",border:"none",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button></div>)}</div>}
+          {m.urls.length>0&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{m.urls.map(u=><div key={u} style={{position:"relative"}}><InspoThumb url={u} urls={m.urls}/><button onClick={()=>onChange("urls",m.urls.filter(x=>x!==u))} style={{position:"absolute",top:-6,right:-6,width:18,height:18,borderRadius:"50%",background:"#C06060",color:"#fff",border:"none",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button></div>)}</div>}
         </Field>
         {days&&days.length>1&&<Field label="Which Days" col="1/-1">
           <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
@@ -427,7 +448,7 @@ const MemberCard = ({m,stylists,onEdit,onRemove}) => {
           <ServicePill svc={m.services}/>
           {sty&&<span style={{fontSize:11,color:"#9E9590"}}>→ {sty.name}</span>}
         </div>
-        {m.urls.length>0&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>{m.urls.map(u=><InspoThumb key={u} url={u}/>)}</div>}
+        {m.urls.length>0&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>{m.urls.map(u=><InspoThumb key={u} url={u} urls={m.urls}/>)}</div>}
         {m.notes&&<p style={{fontSize:12,color:"#6B6058",fontStyle:"italic",lineHeight:1.5}}>{m.notes}</p>}
       </div>
       <div style={{display:"flex",gap:5,flexShrink:0}}>
@@ -766,7 +787,7 @@ const Step4 = ({members,stylists,details,eventId}) => {
                 <div><div style={{fontWeight:500,fontSize:14}}>{m.name||"(Unnamed)"}</div><div style={{marginTop:3}}><RolePill role={m.role}/></div></div>
               </div>
               <ServicePill svc={m.services}/>
-              {m.urls.length>0&&<div style={{display:"flex",gap:5,marginTop:10,flexWrap:"wrap"}}>{m.urls.map(u=><InspoThumb key={u} url={u}/>)}</div>}
+              {m.urls.length>0&&<div style={{display:"flex",gap:5,marginTop:10,flexWrap:"wrap"}}>{m.urls.map(u=><InspoThumb key={u} url={u} urls={m.urls}/>)}</div>}
               {m.notes&&<p style={{marginTop:9,fontSize:12,color:"#6B6058",fontStyle:"italic",lineHeight:1.5,padding:"8px 10px",background:"#FAF7F2",borderRadius:6}}>{m.notes}</p>}
             </div>
           );
