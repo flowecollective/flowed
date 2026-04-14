@@ -196,41 +196,67 @@ const StepNav = ({step,setStep}) => (
 );
 
 /* ── Step 1: Event Details ──────────────────────────────────────────────── */
-const Step1 = ({d,set}) => (
-  <div className="fade-up">
-    <div style={{textAlign:"center",marginBottom:28}}>
-      <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,fontStyle:"italic",marginBottom:4}}>The Celebration</h2>
-      <p style={{color:"#9E9590",fontSize:14}}>Destination details & timing</p>
+const DayCard = ({day,idx,total,onChange,onRemove}) => (
+  <div style={{background:"#FAF7F2",border:"1px solid #E0D8CF",borderRadius:10,padding:"16px 18px",marginBottom:10}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontWeight:600,color:"#B8956A"}}>Day {idx+1}</span>
+        <span style={{fontSize:12,color:"#9E9590"}}>·</span>
+        <input value={day.label} onChange={e=>onChange("label",e.target.value)} placeholder="e.g. Rehearsal Dinner" style={{border:"none",background:"transparent",fontSize:14,fontWeight:500,color:"#1C1815",padding:0,width:180}}/>
+      </div>
+      {total>1&&<button onClick={onRemove} style={{fontSize:11,color:"#C06060",background:"#F8EDED",border:"none",borderRadius:5,padding:"4px 10px",cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>Remove</button>}
     </div>
-    <div style={{background:"#fff",borderRadius:12,border:"1px solid #E8E0D8",padding:"26px 28px"}}>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 20px"}}>
-        <Field label="Couple's Name" col="1/-1"><input value={d.coupleName} onChange={e=>set("coupleName",e.target.value)} placeholder="e.g. Sofia & Marco"/></Field>
-        <Field label="Wedding Date"><input type="date" value={d.date} onChange={e=>set("date",e.target.value)}/></Field>
-        <Field label="Venue / Estate"><input value={d.venue} onChange={e=>set("venue",e.target.value)} placeholder="e.g. Villa del Balbianello"/></Field>
-        <Field label="Destination" col="1/-1"><input value={d.location} onChange={e=>set("location",e.target.value)} placeholder="e.g. Lake Como, Italy"/></Field>
-        <Field label="Getting Ready Location"><input value={d.room} onChange={e=>set("room",e.target.value)} placeholder="e.g. Bridal Suite, Grand Hotel"/></Field>
-        <Field label="Ceremony Time"><input type="time" value={d.ceremonyTime} onChange={e=>set("ceremonyTime",e.target.value)}/></Field>
-        <Field label="Ready-by / First Look Time" col="1/-1">
-          <input type="time" value={d.readyBy} onChange={e=>set("readyBy",e.target.value)}/>
-          <div style={{fontSize:12,color:"#B0A8A0",marginTop:6}}>⚑ Timeline works backward from this. Set 30–60 min before ceremony.</div>
-        </Field>
-        <Field label="Photographer"><input value={d.photographer} onChange={e=>set("photographer",e.target.value)} placeholder="Name"/></Field>
-        <Field label="Videographer"><input value={d.videographer} onChange={e=>set("videographer",e.target.value)} placeholder="Name"/></Field>
-        <Field label="Special Notes" col="1/-1"><textarea value={d.notes} onChange={e=>set("notes",e.target.value)} placeholder="Venue constraints, allergies, access, logistics…"/></Field>
-      </div>
-      <Divider label="Packing Flags" />
-      <div style={{display:"flex",gap:24,flexWrap:"wrap"}}>
-        <Toggle value={d.isOutdoor} onChange={v=>set("isOutdoor",v)} label="Outdoor ceremony"/>
-        <Toggle value={d.hasExtensions} onChange={v=>set("hasExtensions",v)} label="Extensions involved"/>
-      </div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0 14px"}}>
+      <Field label="Date"><input type="date" value={day.date} onChange={e=>onChange("date",e.target.value)}/></Field>
+      <Field label="Ceremony / Event Time"><input type="time" value={day.ceremonyTime} onChange={e=>onChange("ceremonyTime",e.target.value)}/></Field>
+      <Field label="Ready-by Time">
+        <input type="time" value={day.readyBy} onChange={e=>onChange("readyBy",e.target.value)}/>
+      </Field>
     </div>
   </div>
 );
 
-/* ── Step 2: Party Members ──────────────────────────────────────────────── */
-const blankM = () => ({id:uid(),name:"",role:"bridesmaid",services:"both",stylistId:"",urls:[],notes:""});
+const Step1 = ({d,set}) => {
+  const days=d.days||[{id:"legacy",label:"Wedding Day",date:d.date||"",ceremonyTime:d.ceremonyTime||"",readyBy:d.readyBy||""}];
+  const setDay=(idx,k,v)=>{const next=[...days];next[idx]={...next[idx],[k]:v};set("days",next);};
+  const addDay=()=>set("days",[...days,blankDay("Day "+(days.length+1))]);
+  const removeDay=(idx)=>set("days",days.filter((_,i)=>i!==idx));
+  return (
+    <div className="fade-up">
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,fontStyle:"italic",marginBottom:4}}>The Celebration</h2>
+        <p style={{color:"#9E9590",fontSize:14}}>Destination details & timing</p>
+      </div>
+      <div style={{background:"#fff",borderRadius:12,border:"1px solid #E8E0D8",padding:"26px 28px"}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 20px"}}>
+          <Field label="Couple's Name" col="1/-1"><input value={d.coupleName} onChange={e=>set("coupleName",e.target.value)} placeholder="e.g. Sofia & Marco"/></Field>
+          <Field label="Venue / Estate"><input value={d.venue} onChange={e=>set("venue",e.target.value)} placeholder="e.g. Villa del Balbianello"/></Field>
+          <Field label="Destination"><input value={d.location} onChange={e=>set("location",e.target.value)} placeholder="e.g. Lake Como, Italy"/></Field>
+          <Field label="Getting Ready Location" col="1/-1"><input value={d.room} onChange={e=>set("room",e.target.value)} placeholder="e.g. Bridal Suite, Grand Hotel"/></Field>
+        </div>
+        <Divider label="Event Days"/>
+        <div style={{fontSize:12,color:"#B0A8A0",marginBottom:14}}>Add each day that needs hair & makeup. Timeline is built per-day from the ready-by time.</div>
+        {days.map((day,i)=><DayCard key={day.id} day={day} idx={i} total={days.length} onChange={(k,v)=>setDay(i,k,v)} onRemove={()=>removeDay(i)}/>)}
+        <button onClick={addDay} style={{width:"100%",padding:"11px",border:"1.5px dashed #D4C4B4",borderRadius:8,background:"transparent",color:"#A0988E",fontSize:13,cursor:"pointer",fontFamily:"'Jost',sans-serif",marginBottom:16}}>+ Add Another Day</button>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 20px"}}>
+          <Field label="Photographer"><input value={d.photographer} onChange={e=>set("photographer",e.target.value)} placeholder="Name"/></Field>
+          <Field label="Videographer"><input value={d.videographer} onChange={e=>set("videographer",e.target.value)} placeholder="Name"/></Field>
+          <Field label="Special Notes" col="1/-1"><textarea value={d.notes} onChange={e=>set("notes",e.target.value)} placeholder="Venue constraints, allergies, access, logistics…"/></Field>
+        </div>
+        <Divider label="Packing Flags" />
+        <div style={{display:"flex",gap:24,flexWrap:"wrap"}}>
+          <Toggle value={d.isOutdoor} onChange={v=>set("isOutdoor",v)} label="Outdoor ceremony"/>
+          <Toggle value={d.hasExtensions} onChange={v=>set("hasExtensions",v)} label="Extensions involved"/>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-const MemberForm = ({m,stylists,onChange,onSave,onRemove}) => {
+/* ── Step 2: Party Members ──────────────────────────────────────────────── */
+const blankM = (dayIds) => ({id:uid(),name:"",role:"bridesmaid",services:"both",stylistId:"",urls:[],notes:"",dayIds:dayIds||[]});
+
+const MemberForm = ({m,stylists,days,onChange,onSave,onRemove}) => {
   const [urlIn,setUrlIn]=useState("");
   const [uploading,setUploading]=useState(false);
   const fileRef=useRef(null);
@@ -269,6 +295,16 @@ const MemberForm = ({m,stylists,onChange,onSave,onRemove}) => {
           </div>
           {m.urls.length>0&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{m.urls.map(u=><div key={u} style={{position:"relative"}}><InspoThumb url={u}/><button onClick={()=>onChange("urls",m.urls.filter(x=>x!==u))} style={{position:"absolute",top:-6,right:-6,width:18,height:18,borderRadius:"50%",background:"#C06060",color:"#fff",border:"none",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button></div>)}</div>}
         </Field>
+        {days&&days.length>1&&<Field label="Which Days" col="1/-1">
+          <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+            {days.map(day=>{const on=(m.dayIds||[]).includes(day.id);return(
+              <label key={day.id} style={{display:"flex",alignItems:"center",gap:6,fontSize:13,cursor:"pointer",padding:"6px 12px",borderRadius:6,border:`1.5px solid ${on?"#B8956A":"#E0D8CF"}`,background:on?"#F7EFDF":"#fff",transition:"all .15s"}}>
+                <input type="checkbox" checked={on} onChange={()=>{const next=on?(m.dayIds||[]).filter(id=>id!==day.id):[...(m.dayIds||[]),day.id];onChange("dayIds",next);}} style={{display:"none"}}/>
+                <span style={{fontWeight:on?500:400,color:on?"#B8956A":"#6B6058"}}>{day.label}{day.date?` · ${new Date(day.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}`:""}</span>
+              </label>
+            );})}
+          </div>
+        </Field>}
         <Field label="Notes for Stylist" col="1/-1"><textarea value={m.notes} onChange={e=>onChange("notes",e.target.value)} placeholder="Desired look, hair length & texture, allergies, style preferences…" style={{minHeight:60}}/></Field>
       </div>
       <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:10,paddingTop:10,borderTop:"1px solid #EDE6DE"}}>
@@ -302,10 +338,12 @@ const MemberCard = ({m,stylists,onEdit,onRemove}) => {
   );
 };
 
-const Step2 = ({members,setMembers,stylists}) => {
+const Step2 = ({members,setMembers,stylists,days}) => {
   const [editing,setEditing]=useState(null);
   const [draft,setDraft]=useState(null);
-  const startAdd=()=>{const m=blankM();setDraft(m);setEditing(m.id);setMembers(p=>[...p,m]);};
+  const allDayIds=(days||[]).map(d=>d.id);
+  const defaultDayIds=allDayIds.length===1?allDayIds:[];
+  const startAdd=()=>{const m=blankM(defaultDayIds);setDraft(m);setEditing(m.id);setMembers(p=>[...p,m]);};
   const startEdit=(id)=>{setDraft(members.find(m=>m.id===id));setEditing(id);};
   const changeField=(k,v)=>{const u={...draft,[k]:v};setDraft(u);setMembers(p=>p.map(m=>m.id===editing?u:m));};
   const save=()=>{setEditing(null);setDraft(null);};
@@ -328,7 +366,7 @@ const Step2 = ({members,setMembers,stylists}) => {
         </div>
       )}
       {members.map(m=>editing===m.id
-        ?<MemberForm key={m.id} m={draft} stylists={stylists} onChange={changeField} onSave={save} onRemove={()=>remove(m.id)}/>
+        ?<MemberForm key={m.id} m={draft} stylists={stylists} days={days} onChange={changeField} onSave={save} onRemove={()=>remove(m.id)}/>
         :<MemberCard key={m.id} m={m} stylists={stylists} onEdit={()=>startEdit(m.id)} onRemove={()=>remove(m.id)}/>
       )}
       {editing===null&&<button onClick={startAdd} style={{width:"100%",padding:"13px",border:"1.5px dashed #D4C4B4",borderRadius:10,background:"transparent",color:"#A0988E",fontSize:14,cursor:"pointer",fontFamily:"'Jost',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}><span style={{fontSize:18,lineHeight:1}}>+</span> Add Party Member</button>}
@@ -400,27 +438,19 @@ const GanttBar = ({slots,start,end}) => {
   );
 };
 
-const Step4 = ({members,stylists,details}) => {
-  const {tracks,start,end}=useMemo(()=>buildSchedule(members,stylists,details.readyBy),[members,stylists,details.readyBy]);
-  const [copied,setCopied]=useState(false);
-  const fallback=(t)=>{const ta=document.createElement("textarea");ta.value=t;ta.style.cssText="position:fixed;top:0;left:0;opacity:0;";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");setCopied(true);setTimeout(()=>setCopied(false),2200);}catch(e){}document.body.removeChild(ta);};
-  const copyText=()=>{
-    const lines=[`✦ ${details.coupleName||"Wedding"} — Hair & Makeup Timeline`,details.date&&`📅 ${new Date(details.date+"T12:00").toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}`,(details.venue||details.location)&&`📍 ${[details.venue,details.location].filter(Boolean).join(", ")}`,details.room&&`🏨 ${details.room}`,details.readyBy&&`⏰ Ready by: ${fmtTime(parseTime(details.readyBy))}`,start!==null&&`⏳ Styling begins: ${fmtTime(start)}`,""].filter(v=>v!==false&&v!==undefined&&v!=="");
-    tracks.forEach(t=>{lines.push(`— ${t.stylist.name} · ${SPECIALTIES.find(s=>s.v===t.stylist.specialty)?.l||""} —`);t.slots.forEach(s=>lines.push(`  ${fmtTime(s.start)} → ${fmtTime(s.end)}  ${s.name} · ${s.type[0].toUpperCase()+s.type.slice(1)} (${s.dur} min)`));lines.push("");});
-    if (details.notes) lines.push(`📝 ${details.notes}`);
-    const text=lines.join("\n");
-    try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2200);}).catch(()=>fallback(text));}else{fallback(text);}}catch(e){fallback(text);}
-  };
-  if (!members.length) return <div style={{textAlign:"center",padding:"60px 20px",color:"#9E9590"}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:60,color:"#E0D8CF",marginBottom:12}}>✦</div><p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontStyle:"italic",marginBottom:8}}>No party members yet</p><p style={{fontSize:14}}>Add your bridal party in Step 2.</p></div>;
-  if (!details.readyBy) return <div style={{textAlign:"center",padding:"60px 20px",color:"#9E9590"}}><div style={{fontSize:48,marginBottom:12}}>⏰</div><p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontStyle:"italic",marginBottom:8}}>Set a ready-by time</p><p style={{fontSize:14}}>Return to Step 1 and set the "Ready-by / First Look Time".</p></div>;
+const DayTimeline = ({day,members,stylists}) => {
+  const dayMembers=members.filter(m=>{
+    const ids=m.dayIds||[];
+    return ids.length===0||ids.includes(day.id);
+  });
+  const {tracks,start,end}=useMemo(()=>buildSchedule(dayMembers,stylists,day.readyBy),[dayMembers,stylists,day.readyBy]);
+  if(!day.readyBy) return <div style={{textAlign:"center",padding:"30px 20px",color:"#9E9590"}}><p style={{fontSize:13}}>Set a ready-by time for this day in Step 1.</p></div>;
+  if(!dayMembers.length) return <div style={{textAlign:"center",padding:"30px 20px",color:"#9E9590"}}><p style={{fontSize:13}}>No party members assigned to this day.</p></div>;
   return (
-    <div className="fade-up">
-      <div style={{textAlign:"center",marginBottom:22}}>
-        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,fontStyle:"italic",marginBottom:4}}>The Timeline</h2>
-        {start!==null&&<p style={{fontSize:14,color:"#9E9590"}}>Styling begins at <strong style={{color:"#B8956A"}}>{fmtTime(start)}</strong>{details.readyBy&&<> · Ready by <strong style={{color:"#B8956A"}}>{fmtTime(parseTime(details.readyBy))}</strong></>}</p>}
-      </div>
+    <div>
+      {start!==null&&<p style={{fontSize:14,color:"#9E9590",textAlign:"center",marginBottom:16}}>Styling begins at <strong style={{color:"#B8956A"}}>{fmtTime(start)}</strong> · Ready by <strong style={{color:"#B8956A"}}>{fmtTime(parseTime(day.readyBy))}</strong></p>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
-        {[{l:"Party Size",v:members.length,icon:"✦"},{l:"Hair Services",v:members.filter(m=>m.services!=="makeup").length,icon:"✦"},{l:"Makeup Services",v:members.filter(m=>m.services!=="hair").length,icon:"◆"},{l:"Stylist Tracks",v:tracks.length,icon:"✂"}].map(stat=>(
+        {[{l:"Party Size",v:dayMembers.length,icon:"✦"},{l:"Hair",v:dayMembers.filter(m=>m.services!=="makeup").length,icon:"✦"},{l:"Makeup",v:dayMembers.filter(m=>m.services!=="hair").length,icon:"◆"},{l:"Tracks",v:tracks.length,icon:"✂"}].map(stat=>(
           <div key={stat.l} style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:10,padding:"13px 10px",textAlign:"center"}}>
             <div style={{color:"#B8956A",fontSize:16,marginBottom:3}}>{stat.icon}</div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,lineHeight:1}}>{stat.v}</div>
@@ -458,6 +488,46 @@ const Step4 = ({members,stylists,details}) => {
           </div>
         );
       })}
+    </div>
+  );
+};
+
+const Step4 = ({members,stylists,details}) => {
+  const days=details.days||[{id:"legacy",label:"Wedding Day",date:details.date||"",ceremonyTime:details.ceremonyTime||"",readyBy:details.readyBy||""}];
+  const [activeDay,setActiveDay]=useState(days[0]?.id);
+  const [copied,setCopied]=useState(false);
+  const fallback=(t)=>{const ta=document.createElement("textarea");ta.value=t;ta.style.cssText="position:fixed;top:0;left:0;opacity:0;";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");setCopied(true);setTimeout(()=>setCopied(false),2200);}catch(e){}document.body.removeChild(ta);};
+  const copyText=()=>{
+    const lines=[`✦ ${details.coupleName||"Wedding"} — Hair & Makeup Timeline`,(details.venue||details.location)&&`📍 ${[details.venue,details.location].filter(Boolean).join(", ")}`,details.room&&`🏨 ${details.room}`,""].filter(v=>v!==false&&v!==undefined&&v!=="");
+    days.forEach(day=>{
+      const dayMembers=members.filter(m=>{const ids=m.dayIds||[];return ids.length===0||ids.includes(day.id);});
+      const {tracks,start}=buildSchedule(dayMembers,stylists,day.readyBy);
+      if(days.length>1) lines.push(`━━ ${day.label}${day.date?` · ${fmtDate(day.date)}`:""}  ━━`);
+      else if(day.date) lines.push(`📅 ${new Date(day.date+"T12:00").toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}`);
+      if(day.readyBy) lines.push(`⏰ Ready by: ${fmtTime(parseTime(day.readyBy))}`);
+      if(start!==null) lines.push(`⏳ Styling begins: ${fmtTime(start)}`);
+      lines.push("");
+      tracks.forEach(t=>{lines.push(`— ${t.stylist.name} · ${SPECIALTIES.find(s=>s.v===t.stylist.specialty)?.l||""} —`);t.slots.forEach(s=>lines.push(`  ${fmtTime(s.start)} → ${fmtTime(s.end)}  ${s.name} · ${s.type[0].toUpperCase()+s.type.slice(1)} (${s.dur} min)`));lines.push("");});
+    });
+    if(details.notes) lines.push(`📝 ${details.notes}`);
+    const text=lines.join("\n");
+    try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2200);}).catch(()=>fallback(text));}else{fallback(text);}}catch(e){fallback(text);}
+  };
+  if (!members.length) return <div style={{textAlign:"center",padding:"60px 20px",color:"#9E9590"}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:60,color:"#E0D8CF",marginBottom:12}}>✦</div><p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontStyle:"italic",marginBottom:8}}>No party members yet</p><p style={{fontSize:14}}>Add your bridal party in Step 2.</p></div>;
+  const currentDay=days.find(d=>d.id===activeDay)||days[0];
+  return (
+    <div className="fade-up">
+      <div style={{textAlign:"center",marginBottom:22}}>
+        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,fontStyle:"italic",marginBottom:4}}>The Timeline</h2>
+      </div>
+      {days.length>1&&<div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:22}}>
+        {days.map(day=>(
+          <button key={day.id} onClick={()=>setActiveDay(day.id)} style={{fontFamily:"'Jost',sans-serif",fontSize:12,letterSpacing:".06em",color:activeDay===day.id?"#fff":"#6B6058",background:activeDay===day.id?"#1C1815":"#fff",border:`1px solid ${activeDay===day.id?"#1C1815":"#E0D8CF"}`,borderRadius:20,padding:"8px 16px",cursor:"pointer",transition:"all .15s"}}>
+            {day.label}{day.date?` · ${new Date(day.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}`:""}
+          </button>
+        ))}
+      </div>}
+      <DayTimeline day={currentDay} members={members} stylists={stylists}/>
       <Divider label="Client Reference Cards"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:26}}>
         {members.map(m=>{
@@ -605,10 +675,15 @@ const STATUS_STYLE = {
 };
 
 const EventCard = ({ev,onClick}) => {
-  const days=daysUntil(ev.details.date);
+  const evDays=ev.details.days||[];
+  const firstDate=evDays[0]?.date||ev.details.date||"";
+  const countdown=daysUntil(firstDate);
   const st=STATUS_STYLE[ev.status]||STATUS_STYLE.pending;
   const hairCt=ev.members.filter(m=>m.services!=="makeup").length;
   const mkupCt=ev.members.filter(m=>m.services!=="hair").length;
+  const dateStr=evDays.length>1
+    ?evDays.filter(d=>d.date).map(d=>new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})).join(" – ")
+    :fmtDate(firstDate);
   return (
     <div className="ev-card" onClick={onClick} style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:12,padding:"18px 22px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
       <div style={{flex:1,minWidth:0}}>
@@ -616,7 +691,7 @@ const EventCard = ({ev,onClick}) => {
           <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:"#1C1815",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ev.details.coupleName||"Unnamed Event"}</span>
           <span style={{fontSize:10,letterSpacing:".1em",textTransform:"uppercase",color:st.color,background:st.bg,borderRadius:20,padding:"2px 9px",flexShrink:0,fontWeight:500}}>{ev.status}</span>
         </div>
-        <div style={{fontSize:12,color:"#9E9590",marginBottom:8}}>{fmtDate(ev.details.date)}{ev.details.venue?` · ${ev.details.venue}`:""}{ev.details.location?`, ${ev.details.location}`:""}</div>
+        <div style={{fontSize:12,color:"#9E9590",marginBottom:8}}>{dateStr}{ev.details.venue?` · ${ev.details.venue}`:""}{ev.details.location?`, ${ev.details.location}`:""}{evDays.length>1?` · ${evDays.length} days`:""}</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {ev.members.length>0&&<span style={{fontSize:11,color:"#9E9590",background:"#F0EAE2",borderRadius:20,padding:"2px 9px"}}>{ev.members.length} {ev.members.length===1?"person":"people"}</span>}
           {hairCt>0&&<span style={{fontSize:11,color:"#4A7A5A",background:"#EBF2ED",borderRadius:20,padding:"2px 9px"}}>{hairCt} hair</span>}
@@ -626,8 +701,8 @@ const EventCard = ({ev,onClick}) => {
         </div>
       </div>
       <div style={{textAlign:"right",flexShrink:0}}>
-        {days!==null&&days>=0
-          ?<><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,color:days<=14?"#C4979A":"#B8956A",lineHeight:1}}>{days}</div><div style={{fontSize:10,color:"#A0988E",letterSpacing:".08em",textTransform:"uppercase"}}>{days===1?"day":"days"} out</div></>
+        {countdown!==null&&countdown>=0
+          ?<><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,color:countdown<=14?"#C4979A":"#B8956A",lineHeight:1}}>{countdown}</div><div style={{fontSize:10,color:"#A0988E",letterSpacing:".08em",textTransform:"uppercase"}}>{countdown===1?"day":"days"} out</div></>
           :<><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:"#C0B8B0"}}>✓</div><div style={{fontSize:10,color:"#C0B8B0",letterSpacing:".08em",textTransform:"uppercase"}}>passed</div></>
         }
       </div>
@@ -635,10 +710,12 @@ const EventCard = ({ev,onClick}) => {
   );
 };
 
+const blankDay = (label="Wedding Day") => ({id:uid(),label,date:"",ceremonyTime:"",readyBy:""});
+
 const blankEvent = () => ({
   id: uid(),
   status: "pending",
-  details: {coupleName:"",date:"",venue:"",location:"",room:"",ceremonyTime:"",readyBy:"",photographer:"",videographer:"",notes:"",isOutdoor:false,hasExtensions:false},
+  details: {coupleName:"",venue:"",location:"",room:"",photographer:"",videographer:"",notes:"",isOutdoor:false,hasExtensions:false,days:[blankDay()]},
   members: [],
   stylists: [],
   packState: {},
@@ -650,8 +727,8 @@ const Landing = ({events,onOpen,onNew}) => {
   const [filter,setFilter]=useState("upcoming");
   const sorted=[...events]
     .filter(e=>!search||(e.details.coupleName||"").toLowerCase().includes(search.toLowerCase())||(e.details.venue||"").toLowerCase().includes(search.toLowerCase()))
-    .filter(e=>{const d=daysUntil(e.details.date);if(filter==="upcoming") return d===null||d>=0;if(filter==="past") return d!==null&&d<0;return true;})
-    .sort((a,b)=>{const da=new Date(a.details.date||"9999"),db=new Date(b.details.date||"9999");return da-db;});
+    .filter(e=>{const fd=(e.details.days||[])[0]?.date||e.details.date||"";const d=daysUntil(fd);if(filter==="upcoming") return d===null||d>=0;if(filter==="past") return d!==null&&d<0;return true;})
+    .sort((a,b)=>{const da=new Date((a.details.days||[])[0]?.date||a.details.date||"9999"),db=new Date((b.details.days||[])[0]?.date||b.details.date||"9999");return da-db;});
   return (
     <div style={{minHeight:"100vh",background:"#FAF7F2",paddingBottom:60}}>
       <div style={{background:"#1C1815",padding:"20px 32px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
@@ -780,7 +857,7 @@ const ClientView = ({event,updateEvent}) => {
           ))}
         </div>
         {step===1&&<Step1 d={details} set={setDetails}/>}
-        {step===2&&<Step2 members={members} setMembers={setMembers} stylists={stylists}/>}
+        {step===2&&<Step2 members={members} setMembers={setMembers} stylists={stylists} days={details.days}/>}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:26}}>
           {step>1?<Btn variant="ghost" onClick={()=>setStep(1)}>← Back</Btn>:<div/>}
           {step===1&&<Btn onClick={()=>setStep(2)}>Continue to Party →</Btn>}
@@ -879,7 +956,7 @@ export default function App() {
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           {details.coupleName&&<span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:"#D4B896",fontStyle:"italic"}}>{details.coupleName}</span>}
-          {details.date&&<span style={{fontSize:12,color:"#6B6058"}}>{new Date(details.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>}
+          {(details.days||[]).filter(d=>d.date).map((d,i)=><span key={i} style={{fontSize:12,color:"#6B6058"}}>{new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}</span>)}
           <ShareBtn eventId={openId} coupleName={details.coupleName}/>
           <select value={openEvent?.status||"pending"} onChange={e=>updateEvent(openId,ev=>({...ev,status:e.target.value}))}
             style={{fontFamily:"'Jost',sans-serif",fontSize:11,color:"#D4B896",background:"transparent",border:"1px solid #3A3028",borderRadius:5,padding:"4px 8px",width:"auto",letterSpacing:".06em"}}>
@@ -892,7 +969,7 @@ export default function App() {
       <div style={{maxWidth:720,margin:"0 auto",padding:"0 16px"}}>
         <StepNav step={step} setStep={setStep}/>
         {step===1&&<Step1 d={details} set={setDetails}/>}
-        {step===2&&<Step2 members={members} setMembers={setMembers} stylists={stylists}/>}
+        {step===2&&<Step2 members={members} setMembers={setMembers} stylists={stylists} days={details.days}/>}
         {step===3&&<Step3 stylists={stylists} setStylists={setStylists}/>}
         {step===4&&<Step4 members={members} stylists={stylists} details={details}/>}
         {step===5&&<Step5 members={members} details={details} packState={packState} setPackState={setPackState}/>}
