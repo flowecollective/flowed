@@ -68,10 +68,10 @@ const PRIORITY = { bride:0, moh:1, bridesmaid:2, mother_bride:3, mother_groom:4,
 const TBlock = { hair:{bg:"#EBF2ED",border:"#7B9E87",text:"#3A6B4C"}, makeup:{bg:"#F8EDED",border:"#C4979A",text:"#8B4A55"} };
 
 const PACKING_MASTER = [
-  { id:"hair-tools",   label:"Hair Tools",              icon:"✦", items:["Flat iron","Curling iron / wand","Blow dryer","Diffuser attachment","Round brushes (assorted)","Teasing brush","Tail comb","Wide tooth comb","Sectioning clips (large)","Bobby pins — assorted","U-pins / hair pins","Hair elastics — clear + black","Sectioning spray bottle"] },
-  { id:"hair-prod",    label:"Hair Products",           icon:"◈", items:["Heat protectant spray","Hairspray — medium hold","Hairspray — strong hold","Texturizing spray","Dry shampoo","Shine serum / oil","Mousse / volumizer","Pomade / edge control","Setting spray"] },
-  { id:"mkup-tools",   label:"Makeup Tools",            icon:"✧", items:["Foundation brushes","Blending sponges","Eyeshadow brushes — flat + blending","Powder brush","Blush + contour brush","Fan brush","Lip brush","Tweezers","Lash applicator","Small scissors","Palette spatula"] },
-  { id:"mkup-prod",    label:"Makeup Products",         icon:"◇", items:["Primer — face + eye","Foundation (shade range)","Concealer","Setting powder","Contour palette","Blush","Highlight","Eyeshadow palettes","Eyeliner — pencil + liquid","Mascara","False lashes — assorted styles","Lash glue","Lip liner","Lipstick / gloss — assorted","Brow products","Setting spray"] },
+  { id:"hair-tools",   label:"Hair Tools",              icon:"✦", items:["Flat iron","Curling iron / wand","Blow dryer","Diffuser attachment","Round brushes (assorted)","Teasing brush","Tail comb","Wide tooth comb","Sectioning clips (large)","Bobby pins, assorted","U-pins / hair pins","Hair elastics, clear + black","Sectioning spray bottle"] },
+  { id:"hair-prod",    label:"Hair Products",           icon:"◈", items:["Heat protectant spray","Hairspray, medium hold","Hairspray, strong hold","Texturizing spray","Dry shampoo","Shine serum / oil","Mousse / volumizer","Pomade / edge control","Setting spray"] },
+  { id:"mkup-tools",   label:"Makeup Tools",            icon:"✧", items:["Foundation brushes","Blending sponges","Eyeshadow brushes, flat + blending","Powder brush","Blush + contour brush","Fan brush","Lip brush","Tweezers","Lash applicator","Small scissors","Palette spatula"] },
+  { id:"mkup-prod",    label:"Makeup Products",         icon:"◇", items:["Primer, face + eye","Foundation (shade range)","Concealer","Setting powder","Contour palette","Blush","Highlight","Eyeshadow palettes","Eyeliner, pencil + liquid","Mascara","False lashes, assorted styles","Lash glue","Lip liner","Lipstick / gloss, assorted","Brow products","Setting spray"] },
   { id:"skincare",     label:"Skincare Prep",           icon:"○", items:["Facial mist","Lightweight moisturizer","Eye patches","Blotting papers","Barrier / finishing cream"] },
   { id:"disposables",  label:"Disposables & Sanitation",icon:"△", items:["Disposable lip applicators","Disposable mascara wands","Cotton rounds","Cotton swabs","Tissues","Alcohol wipes","Gloves","Neck strips / cape liners"] },
   { id:"comfort",      label:"Client Comfort",          icon:"☽", items:["Styling capes / robes","Hand mirror (client-facing)","Snacks for clients","Water / beverages","Touch-up kit for bride"] },
@@ -153,14 +153,14 @@ const getSmartSuggestions = (members, details) => {
   const hasFlowerGirls=members.some(m=>m.role==="flower_girl");
   const hasExtensions=details.hasExtensions;
   const isOutdoor=details.isOutdoor;
-  if (h>=4) s.push({text:`Extra bobby pins — large party (${h} hair clients)`,cat:"Hair Tools"});
+  if (h>=4) s.push({text:`Extra bobby pins, large party (${h} hair clients)`,cat:"Hair Tools"});
   if (h>=4) s.push({text:"Extra sectioning clips",cat:"Hair Tools"});
   if (h>=5) s.push({text:"Second curling iron / backup wand",cat:"Hair Tools"});
-  if (h>=6) s.push({text:"Second flat iron — high volume",cat:"Hair Tools"});
+  if (h>=6) s.push({text:"Second flat iron, high volume",cat:"Hair Tools"});
   if (h>=6) s.push({text:"Second blow dryer",cat:"Hair Tools"});
   if (mk>=4) s.push({text:`Extra blending sponges (${mk} makeup clients)`,cat:"Makeup Tools"});
   if (mk>=4) s.push({text:"Extra setting spray",cat:"Makeup Products"});
-  if (mk>=6) s.push({text:"Backup mascara — high volume",cat:"Makeup Products"});
+  if (mk>=6) s.push({text:"Backup mascara, high volume",cat:"Makeup Products"});
   if (hasExtensions) s.push({text:"Extension wefts / units",cat:"Hair Tools"});
   if (hasExtensions) s.push({text:"Micro ring / k-tip application tools",cat:"Hair Tools"});
   if (hasExtensions) s.push({text:"Bond remover",cat:"Hair Products"});
@@ -168,7 +168,7 @@ const getSmartSuggestions = (members, details) => {
   if (hasFlowerGirls) s.push({text:"Gentle / sensitive skin makeup for young clients",cat:"Makeup Products"});
   if (isOutdoor) s.push({text:"Extra anti-humidity hairspray",cat:"Hair Products"});
   if (isOutdoor) s.push({text:"Extra waterproof setting spray",cat:"Makeup Products"});
-  if (isOutdoor) s.push({text:"Waterproof mascara — outdoor ceremony",cat:"Makeup Products"});
+  if (isOutdoor) s.push({text:"Waterproof mascara, outdoor ceremony",cat:"Makeup Products"});
   if (isOutdoor) s.push({text:"Sunscreen (team + client touch-up)",cat:"Team & Admin"});
   if (p>=8) s.push({text:"Extra robes / capes",cat:"Client Comfort"});
   if (p>=8) s.push({text:"Second mirror setup",cat:"Client Comfort"});
@@ -177,7 +177,7 @@ const getSmartSuggestions = (members, details) => {
   if(!isUSA){
     s.push({text:"Universal travel power adapter",cat:"Team & Admin"});
     s.push({text:"Voltage converter for hot tools (if needed)",cat:"Team & Admin"});
-    s.push({text:"International plug adapter — backup",cat:"Team & Admin"});
+    s.push({text:"International plug adapter, backup",cat:"Team & Admin"});
   }
   return s;
 };
