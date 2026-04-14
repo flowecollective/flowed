@@ -162,7 +162,13 @@ const ServicePill = ({svc}) => {
 };
 const InspoThumb = ({url}) => {
   const [err,setErr]=useState(false);
-  return <div style={{width:56,height:56,borderRadius:6,overflow:"hidden",background:"#F0EAE2",flexShrink:0,position:"relative"}}>{!err?<img src={url} alt="inspo" onError={()=>setErr(true)} style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<a href={url} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%",fontSize:22,textDecoration:"none"}}>🔗</a>}</div>;
+  const [open,setOpen]=useState(false);
+  return <>
+    <div onClick={()=>!err&&setOpen(true)} style={{width:56,height:56,borderRadius:6,overflow:"hidden",background:"#F0EAE2",flexShrink:0,position:"relative",cursor:err?"default":"zoom-in"}}>{!err?<img src={url} alt="inspo" onError={()=>setErr(true)} style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<a href={url} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%",fontSize:22,textDecoration:"none"}}>🔗</a>}</div>
+    {open&&<div onClick={()=>setOpen(false)} className="fade-in" style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(28,24,21,.85)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"zoom-out",padding:24}}>
+      <img src={url} alt="inspo" style={{maxWidth:"90vw",maxHeight:"85vh",borderRadius:10,objectFit:"contain",boxShadow:"0 8px 40px rgba(0,0,0,.4)"}}/>
+    </div>}
+  </>;
 };
 const Toggle = ({value, onChange, label}) => (
   <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontFamily:"'Jost',sans-serif",fontSize:13,color:"#6B6058"}}>
