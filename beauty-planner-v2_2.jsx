@@ -403,50 +403,82 @@ const Step2 = ({members,setMembers,stylists,days}) => {
 };
 
 /* ── Step 3: Styling Team ───────────────────────────────────────────────── */
-const Step3 = ({stylists,setStylists}) => {
+const Step3 = ({stylists,setStylists,roster,addToRoster,updateRoster,removeFromRoster}) => {
   const [adding,setAdding]=useState(false);
   const [newS,setNewS]=useState({id:uid(),name:"",specialty:"both"});
   const [editId,setEditId]=useState(null);
-  const addStylist=()=>{if(!newS.name.trim()) return;setStylists(p=>[...p,newS]);setNewS({id:uid(),name:"",specialty:"both"});setAdding(false);};
+  const [editDraft,setEditDraft]=useState(null);
+  const assignedIds=new Set(stylists.map(s=>s.id));
+  const toggleAssign=(s)=>{
+    if(assignedIds.has(s.id)){setStylists(p=>p.filter(x=>x.id!==s.id));}
+    else{setStylists(p=>[...p,{id:s.id,name:s.name,specialty:s.specialty}]);}
+  };
+  const addNew=()=>{
+    if(!newS.name.trim()) return;
+    addToRoster(newS);
+    setStylists(p=>[...p,{id:newS.id,name:newS.name,specialty:newS.specialty}]);
+    setNewS({id:uid(),name:"",specialty:"both"});
+    setAdding(false);
+  };
+  const saveEdit=(s)=>{
+    updateRoster(s);
+    if(assignedIds.has(s.id)) setStylists(p=>p.map(x=>x.id===s.id?{...x,name:s.name,specialty:s.specialty}:x));
+    setEditId(null);
+    setEditDraft(null);
+  };
+  const deleteFromRoster=(id)=>{
+    removeFromRoster(id);
+    setStylists(p=>p.filter(x=>x.id!==id));
+  };
   return (
     <div className="fade-up">
       <div style={{textAlign:"center",marginBottom:28}}>
         <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,fontStyle:"italic",marginBottom:4}}>The Styling Team</h2>
-        <p style={{color:"#9E9590",fontSize:14}}>Add all stylists and artists working the day</p>
+        <p style={{color:"#9E9590",fontSize:14}}>Select who's working this event from your team</p>
       </div>
-      {stylists.map((s,i)=>(
-        <div key={s.id} className="fade-in" style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:10,padding:"13px 17px",marginBottom:8,display:"flex",alignItems:"center",gap:13}}>
-          <div style={{width:38,height:38,borderRadius:"50%",background:STYLIST_PALETTE[i%STYLIST_PALETTE.length]+"22",color:STYLIST_PALETTE[i%STYLIST_PALETTE.length],display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:600,fontFamily:"'Cormorant Garamond',serif",flexShrink:0}}>{(s.name||"?")[0].toUpperCase()}</div>
-          <div style={{flex:1}}>
-            {editId===s.id
-              ?<div style={{display:"flex",gap:12,alignItems:"flex-end"}}>
-                <div style={{flex:1}}><input value={s.name} onChange={e=>setStylists(p=>p.map(x=>x.id===s.id?{...x,name:e.target.value}:x))} autoFocus/></div>
-                <div style={{flex:1}}><select value={s.specialty} onChange={e=>setStylists(p=>p.map(x=>x.id===s.id?{...x,specialty:e.target.value}:x))}>{SPECIALTIES.map(sp=><option key={sp.v} value={sp.v}>{sp.l}</option>)}</select></div>
-                <Btn size="sm" onClick={()=>setEditId(null)}>Done</Btn>
+      {roster.length>0&&<>
+        <div style={{fontSize:11,color:"#B0A8A0",letterSpacing:".08em",textTransform:"uppercase",marginBottom:10,fontWeight:500}}>Your Team</div>
+        {roster.map((s,i)=>{
+          const on=assignedIds.has(s.id);
+          return (
+            <div key={s.id} className="fade-in" style={{background:on?"#FFFCF8":"#fff",border:`1.5px solid ${on?"#B8956A":"#E8E0D8"}`,borderRadius:10,padding:"13px 17px",marginBottom:8,display:"flex",alignItems:"center",gap:13,transition:"all .15s"}}>
+              <div onClick={()=>toggleAssign(s)} style={{width:22,height:22,borderRadius:5,border:`1.5px solid ${on?"#B8956A":"#D4C4B4"}`,background:on?"#B8956A":"#fff",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,transition:"all .15s"}}>
+                {on&&<span style={{color:"#fff",fontSize:11,lineHeight:1}}>✓</span>}
               </div>
-              :<><div style={{fontWeight:500,fontSize:15,marginBottom:4}}>{s.name}</div><ServicePill svc={s.specialty}/></>
-            }
-          </div>
-          {editId!==s.id&&<div style={{display:"flex",gap:5}}>
-            <button onClick={()=>setEditId(s.id)} style={{padding:"5px 11px",background:"#F7EFDF",color:"#B8956A",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>Edit</button>
-            <button onClick={()=>setStylists(p=>p.filter(x=>x.id!==s.id))} style={{padding:"5px 9px",background:"#F8EDED",color:"#C06060",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>×</button>
-          </div>}
-        </div>
-      ))}
+              <div style={{width:38,height:38,borderRadius:"50%",background:STYLIST_PALETTE[i%STYLIST_PALETTE.length]+"22",color:STYLIST_PALETTE[i%STYLIST_PALETTE.length],display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:600,fontFamily:"'Cormorant Garamond',serif",flexShrink:0}}>{(s.name||"?")[0].toUpperCase()}</div>
+              <div style={{flex:1}}>
+                {editId===s.id&&editDraft
+                  ?<div style={{display:"flex",gap:12,alignItems:"flex-end"}}>
+                    <div style={{flex:1}}><input value={editDraft.name} onChange={e=>setEditDraft(p=>({...p,name:e.target.value}))} autoFocus/></div>
+                    <div style={{flex:1}}><select value={editDraft.specialty} onChange={e=>setEditDraft(p=>({...p,specialty:e.target.value}))}>{SPECIALTIES.map(sp=><option key={sp.v} value={sp.v}>{sp.l}</option>)}</select></div>
+                    <Btn size="sm" onClick={()=>saveEdit(editDraft)}>Done</Btn>
+                  </div>
+                  :<><div style={{fontWeight:500,fontSize:15,marginBottom:4,color:on?"#1C1815":"#9E9590"}}>{s.name}</div><ServicePill svc={s.specialty}/></>
+                }
+              </div>
+              {editId!==s.id&&<div style={{display:"flex",gap:5}}>
+                <button onClick={()=>{setEditId(s.id);setEditDraft({...s});}} style={{padding:"5px 11px",background:"#F7EFDF",color:"#B8956A",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>Edit</button>
+                <button onClick={()=>deleteFromRoster(s.id)} style={{padding:"5px 9px",background:"#F8EDED",color:"#C06060",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>×</button>
+              </div>}
+            </div>
+          );
+        })}
+      </>}
       {adding
-        ?<div className="fade-in" style={{background:"#FFFCF8",border:"1.5px solid #B8956A",borderRadius:10,padding:"16px 18px",marginBottom:8}}>
+        ?<div className="fade-in" style={{background:"#FFFCF8",border:"1.5px solid #B8956A",borderRadius:10,padding:"16px 18px",marginBottom:8,marginTop:12}}>
+          <div style={{fontSize:11,color:"#B8956A",letterSpacing:".06em",marginBottom:10,fontWeight:500}}>New Team Member</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 14px",marginBottom:12}}>
-            <Field label="Name"><input value={newS.name} onChange={e=>setNewS(p=>({...p,name:e.target.value}))} placeholder="Stylist name" autoFocus onKeyDown={e=>e.key==="Enter"&&addStylist()}/></Field>
+            <Field label="Name"><input value={newS.name} onChange={e=>setNewS(p=>({...p,name:e.target.value}))} placeholder="Stylist name" autoFocus onKeyDown={e=>e.key==="Enter"&&addNew()}/></Field>
             <Field label="Specialty"><select value={newS.specialty} onChange={e=>setNewS(p=>({...p,specialty:e.target.value}))}>{SPECIALTIES.map(sp=><option key={sp.v} value={sp.v}>{sp.l}</option>)}</select></Field>
           </div>
           <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
             <Btn variant="ghost" size="sm" onClick={()=>setAdding(false)}>Cancel</Btn>
-            <Btn size="sm" onClick={addStylist} disabled={!newS.name.trim()}>Add Stylist</Btn>
+            <Btn size="sm" onClick={addNew} disabled={!newS.name.trim()}>Add to Team</Btn>
           </div>
         </div>
-        :<button onClick={()=>setAdding(true)} style={{width:"100%",padding:"13px",border:"1.5px dashed #D4C4B4",borderRadius:10,background:"transparent",color:"#A0988E",fontSize:14,cursor:"pointer",fontFamily:"'Jost',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><span style={{fontSize:18,lineHeight:1}}>+</span> Add Stylist / Artist</button>
+        :<button onClick={()=>setAdding(true)} style={{width:"100%",padding:"13px",border:"1.5px dashed #D4C4B4",borderRadius:10,background:"transparent",color:"#A0988E",fontSize:14,cursor:"pointer",fontFamily:"'Jost',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:12}}><span style={{fontSize:18,lineHeight:1}}>+</span> Add New Team Member</button>
       }
-      {!stylists.length&&!adding&&<p style={{textAlign:"center",padding:"16px",color:"#B8B0A8",fontSize:13}}>If no stylists added, the timeline uses a single "Styling Team" track.</p>}
+      {!roster.length&&!stylists.length&&!adding&&<p style={{textAlign:"center",padding:"16px",color:"#B8B0A8",fontSize:13}}>Add your team members — they'll be available across all events.</p>}
     </div>
   );
 };
@@ -994,6 +1026,7 @@ const ClientView = ({event,updateEvent}) => {
 export default function App() {
   const [events,setEvents]=useState([]);
   const [openId,setOpenId]=useState(null);
+  const [roster,setRoster]=useState([]);
   const saveTimer=useRef(null);
   const [clientMode,setClientMode]=useState(null);
 
@@ -1004,7 +1037,7 @@ export default function App() {
     if(cid) setClientMode(cid);
   },[]);
 
-  // Load events from Supabase on mount
+  // Load events + roster from Supabase on mount
   useEffect(()=>{
     if(clientMode){
       supabase.from("events").select("*").eq("id",clientMode).single()
@@ -1016,8 +1049,25 @@ export default function App() {
         .then(({data,error})=>{
           if(!error&&data) setEvents(data.map(fromRow));
         });
+      supabase.from("team").select("*").order("created_at",{ascending:true})
+        .then(({data,error})=>{
+          if(!error&&data) setRoster(data);
+        });
     }
   },[clientMode]);
+
+  const addToRoster=(s)=>{
+    setRoster(p=>[...p,s]);
+    supabase.from("team").insert({id:s.id,name:s.name,specialty:s.specialty});
+  };
+  const updateRoster=(s)=>{
+    setRoster(p=>p.map(x=>x.id===s.id?s:x));
+    supabase.from("team").update({name:s.name,specialty:s.specialty}).eq("id",s.id);
+  };
+  const removeFromRoster=(id)=>{
+    setRoster(p=>p.filter(x=>x.id!==id));
+    supabase.from("team").delete().eq("id",id);
+  };
 
   // Debounced save to Supabase whenever events change
   const saveEvent = useCallback((ev)=>{
@@ -1092,7 +1142,7 @@ export default function App() {
         <StepNav step={step} setStep={setStep}/>
         {step===1&&<Step1 d={details} set={setDetails}/>}
         {step===2&&<Step2 members={members} setMembers={setMembers} stylists={stylists} days={details.days}/>}
-        {step===3&&<Step3 stylists={stylists} setStylists={setStylists}/>}
+        {step===3&&<Step3 stylists={stylists} setStylists={setStylists} roster={roster} addToRoster={addToRoster} updateRoster={updateRoster} removeFromRoster={removeFromRoster}/>}
         {step===4&&<Step4 members={members} stylists={stylists} details={details}/>}
         {step===5&&<Step5 members={members} details={details} packState={packState} setPackState={setPackState}/>}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:26}}>
