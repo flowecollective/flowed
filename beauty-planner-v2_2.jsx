@@ -684,18 +684,80 @@ const fromRow = (r) => ({
   lastStep: r.last_step || 1,
 });
 
+const CLIENT_STEPS=[{n:1,l:"Event"},{n:2,l:"Party"}];
+
+const ClientView = ({event,updateEvent}) => {
+  const [step,setStep]=useState(event?.lastStep>2?1:event?.lastStep||1);
+  const [saved,setSaved]=useState(false);
+  if(!event) return <div style={{minHeight:"100vh",background:"#FAF7F2",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Jost',sans-serif",color:"#9E9590"}}>Event not found.</div>;
+  const details=event.details||{};
+  const setDetails=(k,v)=>{updateEvent(event.id,e=>({...e,details:{...e.details,[k]:v}}));setSaved(false);};
+  const members=event.members||[];
+  const setMembers=(fn)=>{updateEvent(event.id,e=>({...e,members:typeof fn==="function"?fn(e.members):fn}));setSaved(false);};
+  const stylists=event.stylists||[];
+  return (
+    <div style={{minHeight:"100vh",background:"#FAF7F2",paddingBottom:60}}>
+      <div style={{background:"#1C1815",padding:"17px 32px",marginBottom:36,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:"#D4B896",letterSpacing:".14em"}}>FLOWE</div>
+          <div style={{fontSize:10,color:"#6B6058",letterSpacing:".18em",textTransform:"uppercase",marginTop:1}}>Bridal Beauty Planner</div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          {details.coupleName&&<span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:"#D4B896",fontStyle:"italic"}}>{details.coupleName}</span>}
+        </div>
+      </div>
+      <div style={{maxWidth:720,margin:"0 auto",padding:"0 16px"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:0,marginBottom:36}}>
+          {CLIENT_STEPS.map((s,i)=>(
+            <div key={s.n} style={{display:"flex",alignItems:"center"}}>
+              <div onClick={()=>setStep(s.n)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}}>
+                <div style={{width:32,height:32,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:step===s.n?"#B8956A":step>s.n?"#7B9E87":"#E8E0D8",color:step>=s.n?"#fff":"#A0988E",fontSize:11,fontWeight:600,transition:"all .3s",boxShadow:step===s.n?"0 4px 14px rgba(184,149,106,.35)":"none"}}>{step>s.n?"✓":s.n}</div>
+                <span style={{fontSize:10,letterSpacing:".08em",textTransform:"uppercase",color:step===s.n?"#B8956A":"#A0988E",fontWeight:step===s.n?500:400}}>{s.l}</span>
+              </div>
+              {i<CLIENT_STEPS.length-1&&<div style={{width:36,height:1.5,background:step>s.n?"#7B9E87":"#E8E0D8",marginBottom:22,transition:"background .3s"}}/>}
+            </div>
+          ))}
+        </div>
+        {step===1&&<Step1 d={details} set={setDetails}/>}
+        {step===2&&<Step2 members={members} setMembers={setMembers} stylists={stylists}/>}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:26}}>
+          {step>1?<Btn variant="ghost" onClick={()=>setStep(1)}>← Back</Btn>:<div/>}
+          {step===1&&<Btn onClick={()=>setStep(2)}>Continue to Party →</Btn>}
+          {step===2&&<Btn onClick={()=>setSaved(true)} variant={saved?"ghost":"primary"}>{saved?"✓ Saved":"Submit"}</Btn>}
+        </div>
+        {saved&&<div className="fade-up" style={{textAlign:"center",marginTop:20,padding:"16px 20px",background:"#EBF2ED",borderRadius:10,color:"#3A6B4C",fontSize:13}}>Thank you! Your details have been saved. Your stylist will review them shortly.</div>}
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [events,setEvents]=useState([]);
   const [openId,setOpenId]=useState(null);
   const saveTimer=useRef(null);
+  const [clientMode,setClientMode]=useState(null);
+
+  // Detect client mode from URL
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    const cid=params.get("client");
+    if(cid) setClientMode(cid);
+  },[]);
 
   // Load events from Supabase on mount
   useEffect(()=>{
-    supabase.from("events").select("*").order("created_at",{ascending:false})
-      .then(({data,error})=>{
-        if(!error&&data) setEvents(data.map(fromRow));
-      });
-  },[]);
+    if(clientMode){
+      supabase.from("events").select("*").eq("id",clientMode).single()
+        .then(({data,error})=>{
+          if(!error&&data) setEvents([fromRow(data)]);
+        });
+    } else {
+      supabase.from("events").select("*").order("created_at",{ascending:false})
+        .then(({data,error})=>{
+          if(!error&&data) setEvents(data.map(fromRow));
+        });
+    }
+  },[clientMode]);
 
   // Debounced save to Supabase whenever events change
   const saveEvent = useCallback((ev)=>{
@@ -735,6 +797,12 @@ export default function App() {
   const packState=openEvent?.packState||{};
   const setPackState=(fn)=>updateEvent(openId,e=>({...e,packState:typeof fn==="function"?fn(e.packState):fn}));
 
+  // Client mode — only steps 1 & 2
+  if (clientMode) {
+    const clientEvent=events.find(e=>e.id===clientMode);
+    return <ClientView event={clientEvent} updateEvent={updateEvent}/>;
+  }
+
   if (!openId) return <Landing events={events} onOpen={setOpenId} onNew={createAndOpen}/>;
 
   return (
@@ -751,6 +819,7 @@ export default function App() {
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           {details.coupleName&&<span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:"#D4B896",fontStyle:"italic"}}>{details.coupleName}</span>}
           {details.date&&<span style={{fontSize:12,color:"#6B6058"}}>{new Date(details.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>}
+          <button onClick={()=>{const url=`${window.location.origin}?client=${openId}`;navigator.clipboard.writeText(url);}} style={{fontFamily:"'Jost',sans-serif",fontSize:10,color:"#B8956A",background:"transparent",border:"1px solid #B8956A",borderRadius:5,padding:"4px 10px",cursor:"pointer",letterSpacing:".06em",whiteSpace:"nowrap"}}>Copy Client Link</button>
           <select value={openEvent?.status||"pending"} onChange={e=>updateEvent(openId,ev=>({...ev,status:e.target.value}))}
             style={{fontFamily:"'Jost',sans-serif",fontSize:11,color:"#D4B896",background:"transparent",border:"1px solid #3A3028",borderRadius:5,padding:"4px 8px",width:"auto",letterSpacing:".06em"}}>
             <option value="pending">Pending</option>
