@@ -146,6 +146,13 @@ const getSmartSuggestions = (members, details) => {
   if (isOutdoor) s.push({text:"Sunscreen (team + client touch-up)",cat:"Team & Admin"});
   if (p>=8) s.push({text:"Extra robes / capes",cat:"Client Comfort"});
   if (p>=8) s.push({text:"Second mirror setup",cat:"Client Comfort"});
+  const loc=((details.location||"")+(details.venue||"")).toLowerCase();
+  const isUSA=!loc||/\b(usa|united states|u\.s\.|us$|alabama|alaska|arizona|arkansas|california|colorado|connecticut|delaware|florida|georgia|hawaii|idaho|illinois|indiana|iowa|kansas|kentucky|louisiana|maine|maryland|massachusetts|michigan|minnesota|mississippi|missouri|montana|nebraska|nevada|new hampshire|new jersey|new mexico|new york|north carolina|north dakota|ohio|oklahoma|oregon|pennsylvania|rhode island|south carolina|south dakota|tennessee|texas|utah|vermont|virginia|washington|west virginia|wisconsin|wyoming|nyc|la|sf|chicago|miami|boston|seattle|portland|denver|dallas|houston|austin|nashville|atlanta|charlotte|phoenix|las vegas|san diego|san francisco|los angeles|napa|malibu|hamptons|cape cod|martha.?s vineyard|nantucket)\b/i.test(loc);
+  if(!isUSA){
+    s.push({text:"Universal travel power adapter",cat:"Team & Admin"});
+    s.push({text:"Voltage converter for hot tools (if needed)",cat:"Team & Admin"});
+    s.push({text:"International plug adapter — backup",cat:"Team & Admin"});
+  }
   return s;
 };
 
