@@ -745,7 +745,7 @@ const Step4 = ({members,stylists,details,eventId}) => {
   return (
     <div className="fade-up">
       <div style={{textAlign:"center",marginBottom:22}}>
-        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,fontStyle:"italic",marginBottom:4}}>The Timeline</h2>
+        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,fontStyle:"italic",marginBottom:4}}>Hair & Makeup Timeline</h2>
       </div>
       {days.length>1&&<div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:22,flexWrap:"wrap"}}>
         {days.map(day=>(
