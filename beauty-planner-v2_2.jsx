@@ -855,9 +855,12 @@ const EventCard = ({ev,onClick}) => {
   const st=STATUS_STYLE[ev.status]||STATUS_STYLE.pending;
   const hairCt=ev.members.filter(m=>m.services!=="makeup").length;
   const mkupCt=ev.members.filter(m=>m.services!=="hair").length;
-  const dateStr=evDays.length>1
-    ?evDays.filter(d=>d.date).map(d=>new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})).join(" – ")
-    :fmtDate(firstDate);
+  const dateStr=(()=>{
+    const dd=evDays.filter(d=>d.date).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!dd.length) return "";
+    const fmt=d=>new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
+    return dd.length>1?`${fmt(dd[0])} – ${fmt(dd[dd.length-1])}`:fmtDate(firstDate);
+  })();
   return (
     <div className="ev-card" onClick={onClick} style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:12,padding:"18px 22px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
       <div style={{flex:1,minWidth:0}}>
