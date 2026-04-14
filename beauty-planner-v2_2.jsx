@@ -451,6 +451,97 @@ const Step3 = ({stylists,setStylists}) => {
   );
 };
 
+/* ── PDF Export ────────────────────────────────────────────────────────── */
+const exportPdf = (days, members, stylists, details) => {
+  const w = window.open("", "_blank");
+  if (!w) return;
+  const esc = (s) => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+
+  let html = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>${esc(details.coupleName)||"Timeline"} — FLOWE</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Jost',sans-serif;color:#1C1815;padding:40px 50px;max-width:800px;margin:0 auto;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+h1{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;font-style:italic;color:#1C1815;margin-bottom:2px}
+.subtitle{font-size:11px;color:#9E9590;letter-spacing:.12em;text-transform:uppercase;margin-bottom:20px}
+.meta{font-size:12px;color:#6B6058;margin-bottom:4px}
+.day-label{font-family:'Cormorant Garamond',serif;font-size:20px;color:#B8956A;margin:28px 0 14px;padding-bottom:8px;border-bottom:1.5px solid #E8E0D8}
+.track-name{font-weight:500;font-size:14px;margin:16px 0 8px;color:#6B6058}
+table{width:100%;border-collapse:collapse;margin-bottom:12px}
+th{text-align:left;font-size:10px;color:#9E9590;letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border-bottom:1px solid #E8E0D8}
+td{padding:8px 10px;font-size:13px;border-bottom:1px solid #F0EAE2}
+.hair{background:#EBF2ED;color:#3A6B4C}
+.makeup{background:#F8EDED;color:#8B4A55}
+.svc-pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:12px;font-weight:500}
+.ref-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
+.ref-card{border:1px solid #E8E0D8;border-radius:8px;padding:12px;page-break-inside:avoid}
+.ref-name{font-weight:500;font-size:13px}
+.ref-role{font-size:10px;color:#9E9590;margin-top:2px}
+.ref-notes{font-size:11px;color:#6B6058;font-style:italic;margin-top:6px;line-height:1.5}
+.section-label{font-size:10px;color:#B8956A;letter-spacing:.1em;text-transform:uppercase;margin:24px 0 10px;font-weight:500}
+.footer{margin-top:30px;text-align:center;font-size:10px;color:#C0B8B0;letter-spacing:.14em;text-transform:uppercase}
+@media print{body{padding:30px 40px}@page{margin:0.5in}}
+</style></head><body>`;
+
+  html += `<div style="text-align:center;margin-bottom:24px">`;
+  html += `<div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:#B8956A;letter-spacing:.14em;margin-bottom:6px">FLOWE</div>`;
+  html += `<h1>${esc(details.coupleName) || "Wedding"} — Hair &amp; Makeup Timeline</h1>`;
+  html += `<div class="subtitle">Bridal Beauty Planner</div>`;
+  html += `</div>`;
+
+  if (details.venue || details.location) html += `<div class="meta">📍 ${esc([details.venue, details.location].filter(Boolean).join(", "))}</div>`;
+  if (details.room) html += `<div class="meta">🏨 ${esc(details.room)}</div>`;
+  if (details.photographer) html += `<div class="meta">📷 Photographer: ${esc(details.photographer)}</div>`;
+  if (details.videographer) html += `<div class="meta">🎥 Videographer: ${esc(details.videographer)}</div>`;
+
+  days.forEach((day) => {
+    const dayMembers = members.filter(m => { const ids = m.dayIds || []; return ids.length === 0 || ids.includes(day.id); });
+    const { tracks, start } = buildSchedule(dayMembers, stylists, day.readyBy);
+
+    if (days.length > 1 || day.label !== "Wedding Day") {
+      html += `<div class="day-label">${esc(day.label)}${day.date ? ` · ${fmtDate(day.date)}` : ""}</div>`;
+    } else if (day.date) {
+      html += `<div class="day-label">${fmtDate(day.date)}</div>`;
+    }
+
+    if (day.readyBy) html += `<div class="meta">⏰ Ready by ${fmtTime(parseTime(day.readyBy))}${start !== null ? ` · Styling begins ${fmtTime(start)}` : ""}</div>`;
+
+    tracks.forEach(t => {
+      const spec = SPECIALTIES.find(s => s.v === t.stylist.specialty)?.l || "";
+      html += `<div class="track-name">${esc(t.stylist.name)} · ${esc(spec)}</div>`;
+      html += `<table><tr><th>Time</th><th>Client</th><th>Service</th><th>Duration</th></tr>`;
+      t.slots.forEach(s => {
+        html += `<tr><td>${fmtTime(s.start)} → ${fmtTime(s.end)}</td><td>${esc(s.name)}</td><td><span class="svc-pill ${s.type}">${s.type[0].toUpperCase() + s.type.slice(1)}</span></td><td>${s.dur} min</td></tr>`;
+      });
+      html += `</table>`;
+    });
+  });
+
+  if (details.notes) html += `<div style="margin-top:20px;padding:12px 16px;background:#FAF7F2;border-radius:8px;font-size:12px;color:#6B6058"><strong>Notes:</strong> ${esc(details.notes)}</div>`;
+
+  html += `<div class="section-label">Client Reference</div>`;
+  html += `<div class="ref-grid">`;
+  members.forEach(m => {
+    const ri = getRoleInfo(m.role);
+    const si = getServiceInfo(m.services);
+    const dayLabels = (m.dayIds || []).map(id => (days.find(d => d.id === id) || {}).label).filter(Boolean);
+    html += `<div class="ref-card">`;
+    html += `<div class="ref-name">${esc(m.name) || "(Unnamed)"}</div>`;
+    html += `<div class="ref-role">${esc(ri.l)} · ${esc(si.l)}</div>`;
+    if (days.length > 1 && dayLabels.length) html += `<div style="font-size:10px;color:#B8956A;margin-top:3px">${dayLabels.join(", ")}</div>`;
+    if (m.notes) html += `<div class="ref-notes">${esc(m.notes)}</div>`;
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="footer">Generated by FLOWE · Bridal Beauty Planner</div>`;
+  html += `</body></html>`;
+
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => w.print(), 400);
+};
+
 /* ── Step 4: Timeline ───────────────────────────────────────────────────── */
 const GanttBar = ({slots,start,end}) => {
   const total=end-start;
@@ -573,7 +664,10 @@ const Step4 = ({members,stylists,details}) => {
           );
         })}
       </div>
-      <div style={{display:"flex",justifyContent:"center"}}><Btn onClick={copyText} variant="secondary">{copied?"✓ Copied!":"📋 Copy Timeline Text"}</Btn></div>
+      <div style={{display:"flex",justifyContent:"center",gap:10}}>
+        <Btn onClick={copyText} variant="secondary">{copied?"✓ Copied!":"📋 Copy Timeline"}</Btn>
+        <Btn onClick={()=>exportPdf(days,members,stylists,details)} variant="primary">Export PDF</Btn>
+      </div>
     </div>
   );
 };
