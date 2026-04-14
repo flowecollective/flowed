@@ -91,7 +91,7 @@ const buildSchedule = (members, stylists, readyBy) => {
   });
   const pickBest=(stList)=>stList.reduce((best,s)=>tracks[s.id].nextEnd>tracks[best.id].nextEnd?s:best,stList[0]);
   for (const m of sorted.filter(m=>m.services==="hair"||m.services==="both")) {
-    const dur=m.role==="bride"?90:60, st=pickBest(hairSt);
+    const dur=m.role==="bride"?90:45, st=pickBest(hairSt);
     const end=tracks[st.id].nextEnd, start=end-dur;
     tracks[st.id].slots.push({memberId:m.id,name:m.name,role:m.role,type:"hair",start,end,dur});
     tracks[st.id].nextEnd=start;
@@ -102,7 +102,7 @@ const buildSchedule = (members, stylists, readyBy) => {
     else if(sp==="makeup"){tracks[id].nextEnd=readyByMins;}
   });
   for (const m of sorted.filter(m=>m.services==="makeup"||m.services==="both")) {
-    const dur=m.role==="bride"?60:45, st=pickBest(mkupSt);
+    const dur=m.role==="bride"?60:30, st=pickBest(mkupSt);
     const end=tracks[st.id].nextEnd, start=end-dur;
     tracks[st.id].slots.push({memberId:m.id,name:m.name,role:m.role,type:"makeup",start,end,dur});
     tracks[st.id].nextEnd=start;
