@@ -726,12 +726,14 @@ const Step4 = ({members,stylists,details}) => {
 
 /* ── Step 5: Packing List ───────────────────────────────────────────────── */
 const Step5 = ({members,details,packState,setPackState}) => {
-  const {checked={},smartChecked={},customItems={},collapsed={}} = packState;
+  const {checked={},smartChecked={},customItems={},collapsed={},hidden={}} = packState;
   const [newItemText,setNewItemText]=useState({});
   const [copied,setCopied]=useState(false);
   const suggestions=useMemo(()=>getSmartSuggestions(members,details),[members,details]);
   const set=(k,fn)=>setPackState(p=>({...p,[k]:fn(p[k]||{})}));
   const toggleItem=(catId,item)=>set("checked",p=>({...p,[`${catId}::${item}`]:!p[`${catId}::${item}`]}));
+  const hideItem=(catId,item)=>set("hidden",p=>({...p,[`${catId}::${item}`]:true}));
+  const unhideItem=(catId,item)=>set("hidden",p=>{const n={...p};delete n[`${catId}::${item}`];return n;});
   const toggleSmart=(i)=>set("smartChecked",p=>({...p,[i]:!p[i]}));
   const toggleCollapse=(catId)=>set("collapsed",p=>({...p,[catId]:!p[catId]}));
   const addCustom=(catId)=>{
@@ -740,7 +742,10 @@ const Step5 = ({members,details,packState,setPackState}) => {
     setNewItemText(p=>({...p,[catId]:""}));
   };
   const removeCustom=(catId,idx)=>set("customItems",p=>({...p,[catId]:p[catId].filter((_,i)=>i!==idx)}));
-  const totalItems=PACKING_MASTER.reduce((acc,cat)=>acc+cat.items.length+(customItems[cat.id]?.length||0),0)+suggestions.length;
+  const hiddenCount=Object.values(hidden).filter(Boolean).length;
+  const [showHidden,setShowHidden]=useState(false);
+  const isHidden=(catId,item)=>hidden[`${catId}::${item}`];
+  const totalItems=PACKING_MASTER.reduce((acc,cat)=>acc+cat.items.filter(item=>!isHidden(cat.id,item)).length+(customItems[cat.id]?.length||0),0)+suggestions.length;
   const checkedCount=Object.values(checked).filter(Boolean).length+Object.values(smartChecked).filter(Boolean).length;
   const progress=totalItems>0?Math.round((checkedCount/totalItems)*100):0;
   const fallback=(t)=>{const ta=document.createElement("textarea");ta.value=t;ta.style.cssText="position:fixed;top:0;left:0;opacity:0;";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");setCopied(true);setTimeout(()=>setCopied(false),2200);}catch(e){}document.body.removeChild(ta);};
@@ -765,6 +770,9 @@ const Step5 = ({members,details,packState,setPackState}) => {
         <span style={{fontSize:13,color:"#9E9590",whiteSpace:"nowrap"}}>{checkedCount}/{totalItems} packed</span>
         <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:"#B8956A",lineHeight:1}}>{progress}%</span>
       </div>
+      {hiddenCount>0&&<div style={{textAlign:"right",marginBottom:10}}>
+        <button onClick={()=>setShowHidden(p=>!p)} style={{fontFamily:"'Jost',sans-serif",fontSize:11,color:"#A0988E",background:"transparent",border:"1px solid #E0D8CF",borderRadius:5,padding:"4px 10px",cursor:"pointer"}}>{showHidden?"Hide":"Show"} {hiddenCount} removed item{hiddenCount!==1?"s":""}</button>
+      </div>}
       {/* Smart suggestions */}
       {suggestions.length>0&&(
         <div style={{background:"#F7EFDF",border:"1px solid #E8D5B0",borderRadius:12,padding:"16px 20px",marginBottom:14}}>
@@ -785,7 +793,9 @@ const Step5 = ({members,details,packState,setPackState}) => {
       )}
       {/* Master list */}
       {PACKING_MASTER.map(cat=>{
-        const allItems=[...cat.items,...(customItems[cat.id]||[])];
+        const visibleItems=cat.items.filter(item=>!isHidden(cat.id,item));
+        const hiddenItems=cat.items.filter(item=>isHidden(cat.id,item));
+        const allItems=[...visibleItems,...(customItems[cat.id]||[])];
         const catChecked=allItems.filter(item=>checked[`${cat.id}::${item}`]).length;
         const isCollapsed=collapsed[cat.id];
         return (
@@ -802,17 +812,27 @@ const Step5 = ({members,details,packState,setPackState}) => {
               </div>
             </div>
             {!isCollapsed&&<div style={{borderTop:"1px solid #E8E0D8"}}>
-              {cat.items.map((item,idx)=>{
+              {visibleItems.map((item,idx)=>{
                 const key=`${cat.id}::${item}`, isChecked=checked[key];
                 return (
-                  <div key={idx} className="check-row" onClick={()=>toggleItem(cat.id,item)} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 18px",cursor:"pointer",background:"transparent",transition:"background .12s",borderBottom:"1px solid #F0EAE250"}}>
-                    <div style={{width:17,height:17,borderRadius:4,border:`1.5px solid ${isChecked?"#7B9E87":"#E0D8CF"}`,background:isChecked?"#7B9E87":"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all .15s"}}>
+                  <div key={idx} className="check-row" style={{display:"flex",alignItems:"center",gap:10,padding:"8px 18px",background:"transparent",transition:"background .12s",borderBottom:"1px solid #F0EAE250"}}>
+                    <div onClick={()=>toggleItem(cat.id,item)} style={{width:17,height:17,borderRadius:4,border:`1.5px solid ${isChecked?"#7B9E87":"#E0D8CF"}`,background:isChecked?"#7B9E87":"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer",transition:"all .15s"}}>
                       {isChecked&&<span style={{color:"#fff",fontSize:9}}>✓</span>}
                     </div>
-                    <span style={{fontSize:13,color:isChecked?"#B8B0A8":"#4A4038",textDecoration:isChecked?"line-through":"none",transition:"all .15s"}}>{item}</span>
+                    <span onClick={()=>toggleItem(cat.id,item)} style={{fontSize:13,color:isChecked?"#B8B0A8":"#4A4038",textDecoration:isChecked?"line-through":"none",flex:1,cursor:"pointer",transition:"all .15s"}}>{item}</span>
+                    <button onClick={()=>hideItem(cat.id,item)} style={{background:"none",border:"none",color:"#D4C4B4",cursor:"pointer",fontSize:14,padding:"0 2px",lineHeight:1}}>×</button>
                   </div>
                 );
               })}
+              {showHidden&&hiddenItems.length>0&&<>
+                <div style={{padding:"6px 18px",fontSize:10,color:"#B0A8A0",letterSpacing:".08em",textTransform:"uppercase",background:"#FAF7F2"}}>Removed</div>
+                {hiddenItems.map((item,idx)=>(
+                  <div key={`h${idx}`} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 18px",background:"#FAF7F2",borderBottom:"1px solid #F0EAE250"}}>
+                    <span style={{fontSize:12,color:"#C0B8B0",textDecoration:"line-through",flex:1}}>{item}</span>
+                    <button onClick={()=>unhideItem(cat.id,item)} style={{background:"none",border:"none",color:"#B8956A",cursor:"pointer",fontSize:11,fontFamily:"'Jost',sans-serif",padding:"2px 6px"}}>Restore</button>
+                  </div>
+                ))}
+              </>}
               {(customItems[cat.id]||[]).map((item,idx)=>{
                 const key=`${cat.id}::${item}`, isChecked=checked[key];
                 return (
