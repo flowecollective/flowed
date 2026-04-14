@@ -179,6 +179,31 @@ const Toggle = ({value, onChange, label}) => (
   </label>
 );
 
+/* ── Drag-to-reorder hook ──────────────────────────────────────────────── */
+const useDragReorder = (items, setItems) => {
+  const dragIdx = useRef(null);
+  const overIdx = useRef(null);
+  const onDragStart = (i) => (e) => { dragIdx.current = i; e.dataTransfer.effectAllowed = "move"; e.currentTarget.style.opacity = "0.4"; };
+  const onDragEnd = (e) => { e.currentTarget.style.opacity = "1"; dragIdx.current = null; overIdx.current = null; };
+  const onDragOver = (i) => (e) => { e.preventDefault(); overIdx.current = i; };
+  const onDrop = () => {
+    const from = dragIdx.current, to = overIdx.current;
+    if (from === null || to === null || from === to) return;
+    const next = [...items];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setItems(next);
+  };
+  const dragProps = (i) => ({
+    draggable: true,
+    onDragStart: onDragStart(i),
+    onDragEnd,
+    onDragOver: onDragOver(i),
+    onDrop,
+  });
+  return dragProps;
+};
+
 /* ── Step Nav ───────────────────────────────────────────────────────────── */
 const STEPS=[{n:1,l:"Event"},{n:2,l:"Party"},{n:3,l:"Team"},{n:4,l:"Timeline"},{n:5,l:"Packing"}];
 const StepNav = ({step,setStep}) => (
@@ -218,9 +243,11 @@ const DayCard = ({day,idx,total,onChange,onRemove}) => (
 
 const Step1 = ({d,set}) => {
   const days=d.days||[{id:"legacy",label:"Wedding Day",date:d.date||"",ceremonyTime:d.ceremonyTime||"",readyBy:d.readyBy||""}];
+  const setDays=(v)=>set("days",typeof v==="function"?v(days):v);
   const setDay=(idx,k,v)=>{const next=[...days];next[idx]={...next[idx],[k]:v};set("days",next);};
   const addDay=()=>set("days",[...days,blankDay("Day "+(days.length+1))]);
   const removeDay=(idx)=>set("days",days.filter((_,i)=>i!==idx));
+  const dragDay=useDragReorder(days,setDays);
   return (
     <div className="fade-up">
       <div style={{textAlign:"center",marginBottom:28}}>
@@ -236,7 +263,7 @@ const Step1 = ({d,set}) => {
         </div>
         <Divider label="Event Days"/>
         <div style={{fontSize:12,color:"#B0A8A0",marginBottom:14}}>Add each day that needs hair & makeup. Timeline is built per-day from the ready-by time.</div>
-        {days.map((day,i)=><DayCard key={day.id} day={day} idx={i} total={days.length} onChange={(k,v)=>setDay(i,k,v)} onRemove={()=>removeDay(i)}/>)}
+        {days.map((day,i)=><div key={day.id} {...dragDay(i)} style={{cursor:"grab"}}><DayCard day={day} idx={i} total={days.length} onChange={(k,v)=>setDay(i,k,v)} onRemove={()=>removeDay(i)}/></div>)}
         <button onClick={addDay} style={{width:"100%",padding:"11px",border:"1.5px dashed #D4C4B4",borderRadius:8,background:"transparent",color:"#A0988E",fontSize:13,cursor:"pointer",fontFamily:"'Jost',sans-serif",marginBottom:16}}>+ Add Another Day</button>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 20px"}}>
           <Field label="Photographer"><input value={d.photographer} onChange={e=>set("photographer",e.target.value)} placeholder="Name"/></Field>
@@ -350,6 +377,7 @@ const Step2 = ({members,setMembers,stylists,days}) => {
   const remove=(id)=>{setMembers(p=>p.filter(m=>m.id!==id));if(editing===id){setEditing(null);setDraft(null);}};
   const hairCt=members.filter(m=>m.services!=="makeup").length;
   const mkupCt=members.filter(m=>m.services!=="hair").length;
+  const dragMember=useDragReorder(members,setMembers);
   return (
     <div className="fade-up">
       <div style={{textAlign:"center",marginBottom:28}}>
@@ -365,9 +393,9 @@ const Step2 = ({members,setMembers,stylists,days}) => {
           <div style={{textAlign:"center",flex:1}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,color:"#B8956A"}}>{members.length}</div><div style={{fontSize:11,color:"#9E9590",letterSpacing:".06em"}}>TOTAL</div></div>
         </div>
       )}
-      {members.map(m=>editing===m.id
+      {members.map((m,i)=>editing===m.id
         ?<MemberForm key={m.id} m={draft} stylists={stylists} days={days} onChange={changeField} onSave={save} onRemove={()=>remove(m.id)}/>
-        :<MemberCard key={m.id} m={m} stylists={stylists} onEdit={()=>startEdit(m.id)} onRemove={()=>remove(m.id)}/>
+        :<div key={m.id} {...dragMember(i)} style={{cursor:"grab"}}><MemberCard m={m} stylists={stylists} onEdit={()=>startEdit(m.id)} onRemove={()=>remove(m.id)}/></div>
       )}
       {editing===null&&<button onClick={startAdd} style={{width:"100%",padding:"13px",border:"1.5px dashed #D4C4B4",borderRadius:10,background:"transparent",color:"#A0988E",fontSize:14,cursor:"pointer",fontFamily:"'Jost',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}><span style={{fontSize:18,lineHeight:1}}>+</span> Add Party Member</button>}
     </div>
