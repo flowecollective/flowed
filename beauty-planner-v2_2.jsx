@@ -741,7 +741,7 @@ const Step4 = ({members,stylists,details}) => {
     const text=lines.join("\n");
     try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2200);}).catch(()=>fallback(text));}else{fallback(text);}}catch(e){fallback(text);}
   };
-  if (!members.length) return <div style={{textAlign:"center",padding:"60px 20px",color:"#9E9590"}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:60,color:"#E0D8CF",marginBottom:12}}>✦</div><p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontStyle:"italic",marginBottom:8}}>No party members yet</p><p style={{fontSize:14}}>Add your bridal party in Step 2.</p></div>;
+  if (!members.length) return <div style={{textAlign:"center",padding:"60px 20px",color:"#9E9590"}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:60,color:"#E0D8CF",marginBottom:12}}>✦</div><p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontStyle:"italic",marginBottom:8}}>No party members yet</p><p style={{fontSize:14}}>Add your wedding party in Step 2.</p></div>;
   const currentDay=days.find(d=>d.id===activeDay)||days[0];
   return (
     <div className="fade-up">
