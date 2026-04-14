@@ -1068,6 +1068,7 @@ export default function App() {
         });
       supabase.from("team").select("*").order("created_at",{ascending:true})
         .then(({data,error})=>{
+          if(error) console.error("Team load error:",error);
           if(!error&&data) setRoster(data);
         });
     }
@@ -1075,15 +1076,15 @@ export default function App() {
 
   const addToRoster=(s)=>{
     setRoster(p=>[...p,s]);
-    supabase.from("team").insert({id:s.id,name:s.name,specialty:s.specialty});
+    supabase.from("team").insert({id:s.id,name:s.name,specialty:s.specialty}).then(({error})=>{if(error) console.error("Team insert error:",error);});
   };
   const updateRoster=(s)=>{
     setRoster(p=>p.map(x=>x.id===s.id?s:x));
-    supabase.from("team").update({name:s.name,specialty:s.specialty}).eq("id",s.id);
+    supabase.from("team").update({name:s.name,specialty:s.specialty}).eq("id",s.id).then(({error})=>{if(error) console.error("Team update error:",error);});
   };
   const removeFromRoster=(id)=>{
     setRoster(p=>p.filter(x=>x.id!==id));
-    supabase.from("team").delete().eq("id",id);
+    supabase.from("team").delete().eq("id",id).then(({error})=>{if(error) console.error("Team delete error:",error);});
   };
 
   // Debounced save to Supabase whenever events change
