@@ -283,7 +283,9 @@ const Step1 = ({d,set}) => {
           <Field label="Videographer"><input value={d.videographer} onChange={e=>set("videographer",e.target.value)} placeholder="Name"/></Field>
           <Field label="Special Notes" col="1/-1"><textarea value={d.notes} onChange={e=>set("notes",e.target.value)} placeholder="Venue constraints, allergies, access, logistics…"/></Field>
         </div>
-        <Divider label="Service Durations (minutes)" />
+        <Divider label="Studio Use Only" />
+        <div style={{fontSize:12,color:"#B0A8A0",marginBottom:14,fontStyle:"italic"}}>The sections below are for your team — clients won't see these.</div>
+        <div style={{fontSize:11,color:"#B8956A",letterSpacing:".06em",textTransform:"uppercase",fontWeight:500,marginBottom:10}}>Service Durations (minutes)</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"0 14px"}}>
           <Field label="Bride Hair"><input type="number" min="15" step="5" value={d.brideHair||90} onChange={e=>set("brideHair",+e.target.value||90)}/></Field>
           <Field label="Bride Makeup"><input type="number" min="15" step="5" value={d.brideMakeup||60} onChange={e=>set("brideMakeup",+e.target.value||60)}/></Field>
@@ -291,7 +293,7 @@ const Step1 = ({d,set}) => {
           <Field label="Others Makeup"><input type="number" min="15" step="5" value={d.defaultMakeup||30} onChange={e=>set("defaultMakeup",+e.target.value||30)}/></Field>
         </div>
         <div style={{fontSize:12,color:"#B0A8A0",marginTop:4,marginBottom:16}}>Set defaults here. Override per-person in Step 2 if needed.</div>
-        <Divider label="Packing Flags" />
+        <div style={{fontSize:11,color:"#B8956A",letterSpacing:".06em",textTransform:"uppercase",fontWeight:500,marginTop:16,marginBottom:10}}>Packing Flags</div>
         <div style={{display:"flex",gap:24,flexWrap:"wrap"}}>
           <Toggle value={d.isOutdoor} onChange={v=>set("isOutdoor",v)} label="Outdoor ceremony"/>
           <Toggle value={d.hasExtensions} onChange={v=>set("hasExtensions",v)} label="Extensions involved"/>
