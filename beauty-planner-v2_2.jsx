@@ -20,6 +20,12 @@ button{cursor:pointer;font-family:'Jost',sans-serif;border:none;outline:none}
 .ev-card{transition:box-shadow .18s,transform .18s}
 .ev-card:hover{box-shadow:0 4px 20px rgba(61,53,48,.10);transform:translateY(-1px)}
 .check-row:hover{background:#F0EBE1 !important}
+@media(max-width:600px){
+  .grid-2{grid-template-columns:1fr !important}
+  .grid-3{grid-template-columns:1fr 1fr !important}
+  .grid-4{grid-template-columns:1fr 1fr !important}
+  .grid-stats{grid-template-columns:repeat(2,1fr) !important}
+}
 `;
 if (!document.getElementById("bbp-css")) {
   const s = document.createElement("style");
@@ -244,10 +250,10 @@ const DayCard = ({day,idx,total,onChange,onRemove}) => (
       </div>
       {total>1&&<button onClick={onRemove} style={{fontSize:11,color:"#C06060",background:"#F8EDED",border:"none",borderRadius:5,padding:"4px 10px",cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>Remove</button>}
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0 14px"}}>
+    <div className="grid-3" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0 14px"}}>
       <Field label="Date"><input type="date" value={day.date} onChange={e=>onChange("date",e.target.value)}/></Field>
-      <Field label="Ceremony / Event Time"><input type="time" value={day.ceremonyTime} onChange={e=>onChange("ceremonyTime",e.target.value)}/></Field>
-      <Field label="Ready-by Time">
+      <Field label="Event Time"><input type="time" value={day.ceremonyTime} onChange={e=>onChange("ceremonyTime",e.target.value)}/></Field>
+      <Field label="Ready-by">
         <input type="time" value={day.readyBy} onChange={e=>onChange("readyBy",e.target.value)}/>
       </Field>
     </div>
@@ -268,7 +274,7 @@ const Step1 = ({d,set}) => {
         <p style={{color:"#9E9590",fontSize:14}}>Destination details & timing</p>
       </div>
       <div style={{background:"#fff",borderRadius:12,border:"1px solid #E8E0D8",padding:"26px 28px"}}>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 20px"}}>
+        <div className="grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 20px"}}>
           <Field label="Couple's Name" col="1/-1"><input value={d.coupleName} onChange={e=>set("coupleName",e.target.value)} placeholder="e.g. Sofia & Marco"/></Field>
           <Field label="Venue / Estate"><input value={d.venue} onChange={e=>set("venue",e.target.value)} placeholder="e.g. Villa del Balbianello"/></Field>
           <Field label="Destination"><input value={d.location} onChange={e=>set("location",e.target.value)} placeholder="e.g. Lake Como, Italy"/></Field>
@@ -278,7 +284,7 @@ const Step1 = ({d,set}) => {
         <div style={{fontSize:12,color:"#B0A8A0",marginBottom:14}}>Add each day that needs hair & makeup. Timeline is built per-day from the ready-by time.</div>
         {days.map((day,i)=><div key={day.id} {...dragDay(i)} style={{cursor:"grab"}}><DayCard day={day} idx={i} total={days.length} onChange={(k,v)=>setDay(i,k,v)} onRemove={()=>removeDay(i)}/></div>)}
         <button onClick={addDay} style={{width:"100%",padding:"11px",border:"1.5px dashed #D4C4B4",borderRadius:8,background:"transparent",color:"#A0988E",fontSize:13,cursor:"pointer",fontFamily:"'Jost',sans-serif",marginBottom:16}}>+ Add Another Day</button>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 20px"}}>
+        <div className="grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 20px"}}>
           <Field label="Photographer"><input value={d.photographer} onChange={e=>set("photographer",e.target.value)} placeholder="Name"/></Field>
           <Field label="Videographer"><input value={d.videographer} onChange={e=>set("videographer",e.target.value)} placeholder="Name"/></Field>
           <Field label="Special Notes" col="1/-1"><textarea value={d.notes} onChange={e=>set("notes",e.target.value)} placeholder="Venue constraints, allergies, access, logistics…"/></Field>
@@ -286,7 +292,7 @@ const Step1 = ({d,set}) => {
         <Divider label="Studio Use Only" />
         <div style={{fontSize:12,color:"#B0A8A0",marginBottom:14,fontStyle:"italic"}}>The sections below are for your team — clients won't see these.</div>
         <div style={{fontSize:11,color:"#B8956A",letterSpacing:".06em",textTransform:"uppercase",fontWeight:500,marginBottom:10}}>Service Durations (minutes)</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"0 14px"}}>
+        <div className="grid-4" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"0 14px"}}>
           <Field label="Bride Hair"><input type="number" min="15" step="5" value={d.brideHair||90} onChange={e=>set("brideHair",+e.target.value||90)}/></Field>
           <Field label="Bride Makeup"><input type="number" min="15" step="5" value={d.brideMakeup||60} onChange={e=>set("brideMakeup",+e.target.value||60)}/></Field>
           <Field label="Others Hair"><input type="number" min="15" step="5" value={d.defaultHair||45} onChange={e=>set("defaultHair",+e.target.value||45)}/></Field>
@@ -331,7 +337,7 @@ const MemberForm = ({m,stylists,days,onChange,onSave,onRemove}) => {
   };
   return (
     <div className="fade-in" style={{background:"#FFFCF8",border:"1.5px solid #B8956A",borderRadius:10,padding:"18px 20px",marginBottom:10}}>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>
+      <div className="grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>
         <Field label="Full Name"><input value={m.name} onChange={e=>onChange("name",e.target.value)} placeholder="e.g. Emma Rossi" autoFocus/></Field>
         <Field label="Role"><select value={m.role} onChange={e=>onChange("role",e.target.value)}>{ROLES.map(r=><option key={r.v} value={r.v}>{r.l}</option>)}</select></Field>
         <Field label="Services Needed"><select value={m.services} onChange={e=>onChange("services",e.target.value)}>{SERVICES.map(s=><option key={s.v} value={s.v}>{s.l}</option>)}</select></Field>
@@ -497,7 +503,7 @@ const Step3 = ({stylists,setStylists,roster,addToRoster,updateRoster,removeFromR
       {adding
         ?<div className="fade-in" style={{background:"#FFFCF8",border:"1.5px solid #B8956A",borderRadius:10,padding:"16px 18px",marginBottom:8,marginTop:12}}>
           <div style={{fontSize:11,color:"#B8956A",letterSpacing:".06em",marginBottom:10,fontWeight:500}}>New Team Member</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 14px",marginBottom:12}}>
+          <div className="grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 14px",marginBottom:12}}>
             <Field label="Name"><input value={newS.name} onChange={e=>setNewS(p=>({...p,name:e.target.value}))} placeholder="Stylist name" autoFocus onKeyDown={e=>e.key==="Enter"&&addNew()}/></Field>
             <Field label="Specialty"><select value={newS.specialty} onChange={e=>setNewS(p=>({...p,specialty:e.target.value}))}>{SPECIALTIES.map(sp=><option key={sp.v} value={sp.v}>{sp.l}</option>)}</select></Field>
           </div>
@@ -633,7 +639,7 @@ const DayTimeline = ({day,members,stylists,durations,totalDays}) => {
   return (
     <div>
       {start!==null&&<p style={{fontSize:14,color:"#9E9590",textAlign:"center",marginBottom:16}}>Styling begins at <strong style={{color:"#B8956A"}}>{fmtTime(start)}</strong> · Ready by <strong style={{color:"#B8956A"}}>{fmtTime(parseTime(day.readyBy))}</strong></p>}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
+      <div className="grid-stats" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
         {[{l:"Party Size",v:dayMembers.length,icon:"✦"},{l:"Hair",v:dayMembers.filter(m=>m.services!=="makeup").length,icon:"✦"},{l:"Makeup",v:dayMembers.filter(m=>m.services!=="hair").length,icon:"◆"},{l:"Tracks",v:tracks.length,icon:"✂"}].map(stat=>(
           <div key={stat.l} style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:10,padding:"13px 10px",textAlign:"center"}}>
             <div style={{color:"#B8956A",fontSize:16,marginBottom:3}}>{stat.icon}</div>
