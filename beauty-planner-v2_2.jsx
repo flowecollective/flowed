@@ -76,8 +76,11 @@ const fmtTime = (mins) => {
 const fmtDate = (d) => d ? new Date(d+"T12:00").toLocaleDateString("en-US",{weekday:"short",month:"long",day:"numeric",year:"numeric"}) : "";
 const daysUntil = (d) => { if(!d) return null; return Math.ceil((new Date(d+"T12:00")-new Date())/(1000*60*60*24)); };
 
-const buildSchedule = (members, stylists, readyBy) => {
+const buildSchedule = (members, stylists, readyBy, durations) => {
   if (!members.length||!readyBy) return { tracks:[], start:null, end:null };
+  const d=durations||{};
+  const brideHair=d.brideHair||90, brideMakeup=d.brideMakeup||60;
+  const defHair=d.defaultHair||45, defMakeup=d.defaultMakeup||30;
   const readyByMins=parseTime(readyBy);
   const sorted=[...members].sort((a,b)=>(PRIORITY[a.role]??6)-(PRIORITY[b.role]??6));
   const all=stylists.length?stylists:[{id:"tbd",name:"Styling Team",specialty:"both"}];
@@ -91,7 +94,7 @@ const buildSchedule = (members, stylists, readyBy) => {
   });
   const pickBest=(stList)=>stList.reduce((best,s)=>tracks[s.id].nextEnd>tracks[best.id].nextEnd?s:best,stList[0]);
   for (const m of sorted.filter(m=>m.services==="hair"||m.services==="both")) {
-    const dur=m.role==="bride"?90:45, st=pickBest(hairSt);
+    const dur=m.hairMins||( m.role==="bride"?brideHair:defHair), st=pickBest(hairSt);
     const end=tracks[st.id].nextEnd, start=end-dur;
     tracks[st.id].slots.push({memberId:m.id,name:m.name,role:m.role,type:"hair",start,end,dur});
     tracks[st.id].nextEnd=start;
@@ -102,7 +105,7 @@ const buildSchedule = (members, stylists, readyBy) => {
     else if(sp==="makeup"){tracks[id].nextEnd=readyByMins;}
   });
   for (const m of sorted.filter(m=>m.services==="makeup"||m.services==="both")) {
-    const dur=m.role==="bride"?60:30, st=pickBest(mkupSt);
+    const dur=m.makeupMins||(m.role==="bride"?brideMakeup:defMakeup), st=pickBest(mkupSt);
     const end=tracks[st.id].nextEnd, start=end-dur;
     tracks[st.id].slots.push({memberId:m.id,name:m.name,role:m.role,type:"makeup",start,end,dur});
     tracks[st.id].nextEnd=start;
@@ -270,6 +273,14 @@ const Step1 = ({d,set}) => {
           <Field label="Videographer"><input value={d.videographer} onChange={e=>set("videographer",e.target.value)} placeholder="Name"/></Field>
           <Field label="Special Notes" col="1/-1"><textarea value={d.notes} onChange={e=>set("notes",e.target.value)} placeholder="Venue constraints, allergies, access, logistics…"/></Field>
         </div>
+        <Divider label="Service Durations (minutes)" />
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:"0 14px"}}>
+          <Field label="Bride Hair"><input type="number" min="15" step="5" value={d.brideHair||90} onChange={e=>set("brideHair",+e.target.value||90)}/></Field>
+          <Field label="Bride Makeup"><input type="number" min="15" step="5" value={d.brideMakeup||60} onChange={e=>set("brideMakeup",+e.target.value||60)}/></Field>
+          <Field label="Others Hair"><input type="number" min="15" step="5" value={d.defaultHair||45} onChange={e=>set("defaultHair",+e.target.value||45)}/></Field>
+          <Field label="Others Makeup"><input type="number" min="15" step="5" value={d.defaultMakeup||30} onChange={e=>set("defaultMakeup",+e.target.value||30)}/></Field>
+        </div>
+        <div style={{fontSize:12,color:"#B0A8A0",marginTop:4,marginBottom:16}}>Set defaults here. Override per-person in Step 2 if needed.</div>
         <Divider label="Packing Flags" />
         <div style={{display:"flex",gap:24,flexWrap:"wrap"}}>
           <Toggle value={d.isOutdoor} onChange={v=>set("isOutdoor",v)} label="Outdoor ceremony"/>
@@ -281,7 +292,7 @@ const Step1 = ({d,set}) => {
 };
 
 /* ── Step 2: Party Members ──────────────────────────────────────────────── */
-const blankM = (dayIds) => ({id:uid(),name:"",role:"bridesmaid",services:"both",stylistId:"",urls:[],notes:"",dayIds:dayIds||[]});
+const blankM = (dayIds) => ({id:uid(),name:"",role:"bridesmaid",services:"both",stylistId:"",urls:[],notes:"",dayIds:dayIds||[],hairMins:0,makeupMins:0});
 
 const MemberForm = ({m,stylists,days,onChange,onSave,onRemove}) => {
   const [urlIn,setUrlIn]=useState("");
@@ -331,6 +342,12 @@ const MemberForm = ({m,stylists,days,onChange,onSave,onRemove}) => {
               </label>
             );})}
           </div>
+        </Field>}
+        {(m.services==="hair"||m.services==="both")&&<Field label="Hair Duration Override">
+          <input type="number" min="0" step="5" value={m.hairMins||""} onChange={e=>onChange("hairMins",+e.target.value||0)} placeholder="Default" style={{width:"100%"}}/>
+        </Field>}
+        {(m.services==="makeup"||m.services==="both")&&<Field label="Makeup Duration Override">
+          <input type="number" min="0" step="5" value={m.makeupMins||""} onChange={e=>onChange("makeupMins",+e.target.value||0)} placeholder="Default" style={{width:"100%"}}/>
         </Field>}
         <Field label="Notes for Stylist" col="1/-1"><textarea value={m.notes} onChange={e=>onChange("notes",e.target.value)} placeholder="Desired look, hair length & texture, allergies, style preferences…" style={{minHeight:60}}/></Field>
       </div>
@@ -528,7 +545,7 @@ td{padding:8px 10px;font-size:13px;border-bottom:1px solid #F0EAE2}
 
   days.forEach((day) => {
     const dayMembers = members.filter(m => { const ids = m.dayIds || []; return ids.length === 0 || ids.includes(day.id); });
-    const { tracks, start } = buildSchedule(dayMembers, stylists, day.readyBy);
+    const { tracks, start } = buildSchedule(dayMembers, stylists, day.readyBy, details);
 
     if (days.length > 1 || day.label !== "Wedding Day") {
       html += `<div class="day-label">${esc(day.label)}${day.date ? ` · ${fmtDate(day.date)}` : ""}</div>`;
@@ -589,12 +606,12 @@ const GanttBar = ({slots,start,end}) => {
   );
 };
 
-const DayTimeline = ({day,members,stylists}) => {
+const DayTimeline = ({day,members,stylists,durations}) => {
   const dayMembers=members.filter(m=>{
     const ids=m.dayIds||[];
     return ids.length===0||ids.includes(day.id);
   });
-  const {tracks,start,end}=useMemo(()=>buildSchedule(dayMembers,stylists,day.readyBy),[dayMembers,stylists,day.readyBy]);
+  const {tracks,start,end}=useMemo(()=>buildSchedule(dayMembers,stylists,day.readyBy,durations),[dayMembers,stylists,day.readyBy,durations]);
   if(!day.readyBy) return <div style={{textAlign:"center",padding:"30px 20px",color:"#9E9590"}}><p style={{fontSize:13}}>Set a ready-by time for this day in Step 1.</p></div>;
   if(!dayMembers.length) return <div style={{textAlign:"center",padding:"30px 20px",color:"#9E9590"}}><p style={{fontSize:13}}>No party members assigned to this day.</p></div>;
   return (
@@ -652,7 +669,7 @@ const Step4 = ({members,stylists,details}) => {
     const lines=[`✦ ${details.coupleName||"Wedding"} — Hair & Makeup Timeline`,(details.venue||details.location)&&`📍 ${[details.venue,details.location].filter(Boolean).join(", ")}`,details.room&&`🏨 ${details.room}`,""].filter(v=>v!==false&&v!==undefined&&v!=="");
     days.forEach(day=>{
       const dayMembers=members.filter(m=>{const ids=m.dayIds||[];return ids.length===0||ids.includes(day.id);});
-      const {tracks,start}=buildSchedule(dayMembers,stylists,day.readyBy);
+      const {tracks,start}=buildSchedule(dayMembers,stylists,day.readyBy,details);
       if(days.length>1) lines.push(`━━ ${day.label}${day.date?` · ${fmtDate(day.date)}`:""}  ━━`);
       else if(day.date) lines.push(`📅 ${new Date(day.date+"T12:00").toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}`);
       if(day.readyBy) lines.push(`⏰ Ready by: ${fmtTime(parseTime(day.readyBy))}`);
@@ -678,7 +695,7 @@ const Step4 = ({members,stylists,details}) => {
           </button>
         ))}
       </div>}
-      <DayTimeline day={currentDay} members={members} stylists={stylists}/>
+      <DayTimeline day={currentDay} members={members} stylists={stylists} durations={details}/>
       <Divider label="Client Reference Cards"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:26}}>
         {members.map(m=>{
@@ -869,7 +886,7 @@ const blankDay = (label="Wedding Day") => ({id:uid(),label,date:"",ceremonyTime:
 const blankEvent = () => ({
   id: uid(),
   status: "pending",
-  details: {coupleName:"",venue:"",location:"",room:"",photographer:"",videographer:"",notes:"",isOutdoor:false,hasExtensions:false,days:[blankDay()]},
+  details: {coupleName:"",venue:"",location:"",room:"",photographer:"",videographer:"",notes:"",isOutdoor:false,hasExtensions:false,days:[blankDay()],brideHair:90,brideMakeup:60,defaultHair:45,defaultMakeup:30},
   members: [],
   stylists: [],
   packState: {},
