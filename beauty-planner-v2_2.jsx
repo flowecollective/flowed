@@ -22,9 +22,17 @@ button{cursor:pointer;font-family:'Jost',sans-serif;border:none;outline:none}
 .check-row:hover{background:#F0EBE1 !important}
 @media(max-width:600px){
   .grid-2{grid-template-columns:1fr !important}
-  .grid-3{grid-template-columns:1fr 1fr !important}
+  .grid-3{grid-template-columns:1fr !important}
   .grid-4{grid-template-columns:1fr 1fr !important}
   .grid-stats{grid-template-columns:repeat(2,1fr) !important}
+  .top-bar{flex-wrap:wrap !important;padding:12px 16px !important;gap:8px !important}
+  .top-bar .bar-logo{display:none !important}
+  .top-bar .bar-brand{font-size:14px !important;letter-spacing:.1em !important}
+  .top-bar .bar-sub{display:none !important}
+  .top-bar .bar-right{flex-wrap:wrap !important;justify-content:flex-end !important;gap:8px !important}
+  .day-grid{grid-template-columns:1fr 1fr !important}
+  .day-grid .day-full{grid-column:1/-1 !important}
+  .grid-4>div>div:first-child{min-height:30px;display:flex;align-items:flex-end}
 }
 `;
 if (!document.getElementById("bbp-css")) {
@@ -262,8 +270,8 @@ const DayCard = ({day,idx,total,onChange,onRemove}) => (
       </div>
       {total>1&&<button onClick={onRemove} style={{fontSize:11,color:"#C06060",background:"#F8EDED",border:"none",borderRadius:5,padding:"4px 10px",cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>Remove</button>}
     </div>
-    <div className="grid-3" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0 14px"}}>
-      <Field label="Date"><input type="date" value={day.date} onChange={e=>onChange("date",e.target.value)}/></Field>
+    <div className="day-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0 14px"}}>
+      <Field label="Date" col={undefined}><input type="date" value={day.date} onChange={e=>onChange("date",e.target.value)}/></Field>
       <Field label="Event Time"><input type="time" value={day.ceremonyTime} onChange={e=>onChange("ceremonyTime",e.target.value)}/></Field>
       <Field label="Ready-by">
         <input type="time" value={day.readyBy} onChange={e=>onChange("readyBy",e.target.value)}/>
@@ -1210,18 +1218,18 @@ export default function App() {
 
   return (
     <div style={{minHeight:"100vh",background:"#FAF7F2",paddingBottom:60}}>
-      <div style={{background:"#1C1815",padding:"17px 32px",marginBottom:36,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      <div className="top-bar" style={{background:"#1C1815",padding:"17px 32px",marginBottom:36,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{display:"flex",alignItems:"center",gap:16}}>
           <button onClick={()=>setOpenId(null)} style={{background:"none",border:"none",color:"#6B6058",cursor:"pointer",fontFamily:"'Jost',sans-serif",fontSize:11,letterSpacing:".12em",textTransform:"uppercase",padding:0,display:"flex",alignItems:"center",gap:5}}>← Events</button>
-          <div style={{width:1,height:20,background:"#3A3028"}}/>
-          <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:"#D4B896",letterSpacing:".14em"}}>FLOWE</div>
-            <div style={{fontSize:10,color:"#6B6058",letterSpacing:".18em",textTransform:"uppercase",marginTop:1}}>Event Beauty Planner</div>
+          <div className="bar-logo" style={{width:1,height:20,background:"#3A3028"}}/>
+          <div className="bar-logo">
+            <div className="bar-brand" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:"#D4B896",letterSpacing:".14em"}}>FLOWE</div>
+            <div className="bar-sub" style={{fontSize:10,color:"#6B6058",letterSpacing:".18em",textTransform:"uppercase",marginTop:1}}>Event Beauty Planner</div>
           </div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          {details.coupleName&&<span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:"#D4B896",fontStyle:"italic"}}>{details.coupleName}</span>}
-          {(()=>{const dd=(details.days||[]).filter(d=>d.date).sort((a,b)=>a.date.localeCompare(b.date));if(!dd.length) return null;const fmt=d=>new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});return <span style={{fontSize:12,color:"#6B6058"}}>{dd.length===1?fmt(dd[0]):`${fmt(dd[0])} – ${fmt(dd[dd.length-1])}`}</span>;})()}
+        <div className="bar-right" style={{display:"flex",alignItems:"center",gap:12}}>
+          {details.coupleName&&<span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:"#D4B896",fontStyle:"italic",whiteSpace:"nowrap"}}>{details.coupleName}</span>}
+          {(()=>{const dd=(details.days||[]).filter(d=>d.date).sort((a,b)=>a.date.localeCompare(b.date));if(!dd.length) return null;const fmt=d=>new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});return <span style={{fontSize:11,color:"#6B6058",whiteSpace:"nowrap"}}>{dd.length===1?fmt(dd[0]):`${fmt(dd[0])} – ${fmt(dd[dd.length-1])}`}</span>;})()}
           <select value={openEvent?.status||"pending"} onChange={e=>updateEvent(openId,ev=>({...ev,status:e.target.value}))}
             style={{fontFamily:"'Jost',sans-serif",fontSize:11,color:"#D4B896",background:"transparent",border:"1px solid #3A3028",borderRadius:5,padding:"4px 8px",width:"auto",letterSpacing:".06em"}}>
             <option value="pending">Pending</option>
