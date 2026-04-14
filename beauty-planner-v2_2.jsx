@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { supabase } from "./supabase.js";
 
 /* ── Global CSS ─────────────────────────────────────────────────────────── */
 const GLOBAL_CSS = `
@@ -656,16 +657,64 @@ const Landing = ({events,onOpen,onNew}) => {
 /* ── Root App ───────────────────────────────────────────────────────────── */
 const STEP_LABELS=["Continue to Party →","Continue to Team →","Generate Timeline →","View Packing List →"];
 
+/* ── Supabase helpers ──────────────────────────────────────────────────── */
+const toRow = (ev) => ({
+  id: ev.id,
+  status: ev.status,
+  details: ev.details,
+  members: ev.members,
+  stylists: ev.stylists,
+  pack_state: ev.packState,
+  last_step: ev.lastStep,
+  updated_at: new Date().toISOString(),
+});
+const fromRow = (r) => ({
+  id: r.id,
+  status: r.status,
+  details: r.details || {},
+  members: r.members || [],
+  stylists: r.stylists || [],
+  packState: r.pack_state || {},
+  lastStep: r.last_step || 1,
+});
+
 export default function App() {
   const [events,setEvents]=useState([]);
   const [openId,setOpenId]=useState(null);
+  const saveTimer=useRef(null);
+
+  // Load events from Supabase on mount
+  useEffect(()=>{
+    supabase.from("events").select("*").order("created_at",{ascending:false})
+      .then(({data,error})=>{
+        if(!error&&data) setEvents(data.map(fromRow));
+      });
+  },[]);
+
+  // Debounced save to Supabase whenever events change
+  const saveEvent = useCallback((ev)=>{
+    clearTimeout(saveTimer.current);
+    saveTimer.current=setTimeout(()=>{
+      supabase.from("events").upsert(toRow(ev)).then(({error})=>{
+        if(error) console.error("Save error:",error);
+      });
+    },500);
+  },[]);
 
   const openEvent=events.find(e=>e.id===openId);
-  const updateEvent=(id,fn)=>setEvents(p=>p.map(e=>e.id===id?fn(e):e));
+  const updateEvent=(id,fn)=>{
+    setEvents(p=>{
+      const next=p.map(e=>e.id===id?fn(e):e);
+      const updated=next.find(e=>e.id===id);
+      if(updated) saveEvent(updated);
+      return next;
+    });
+  };
 
   const createAndOpen=()=>{
     const ev=blankEvent();
     setEvents(p=>[...p,ev]);
+    supabase.from("events").insert(toRow(ev));
     setOpenId(ev.id);
   };
 
