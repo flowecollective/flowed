@@ -416,7 +416,7 @@ const Step2 = ({members,setMembers,stylists,days,eventId,coupleName}) => {
   return (
     <div className="fade-up">
       <div style={{textAlign:"center",marginBottom:28}}>
-        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,fontStyle:"italic",marginBottom:4}}>The Bridal Party</h2>
+        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,fontStyle:"italic",marginBottom:4}}>The Wedding Party</h2>
         <p style={{color:"#9E9590",fontSize:14}}>Add every person receiving services</p>
       </div>
       {members.length>0&&(
