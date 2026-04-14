@@ -1149,7 +1149,7 @@ export default function App() {
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           {details.coupleName&&<span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:"#D4B896",fontStyle:"italic"}}>{details.coupleName}</span>}
-          {(details.days||[]).filter(d=>d.date).map((d,i)=><span key={i} style={{fontSize:12,color:"#6B6058"}}>{new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}</span>)}
+          {(()=>{const dd=(details.days||[]).filter(d=>d.date).sort((a,b)=>a.date.localeCompare(b.date));if(!dd.length) return null;const fmt=d=>new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});return <span style={{fontSize:12,color:"#6B6058"}}>{dd.length===1?fmt(dd[0]):`${fmt(dd[0])} – ${fmt(dd[dd.length-1])}`}</span>;})()}
           <ShareBtn eventId={openId} coupleName={details.coupleName}/>
           <select value={openEvent?.status||"pending"} onChange={e=>updateEvent(openId,ev=>({...ev,status:e.target.value}))}
             style={{fontFamily:"'Jost',sans-serif",fontSize:11,color:"#D4B896",background:"transparent",border:"1px solid #3A3028",borderRadius:5,padding:"4px 8px",width:"auto",letterSpacing:".06em"}}>
