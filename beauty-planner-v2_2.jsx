@@ -100,9 +100,12 @@ const buildSchedule = (members, stylists, readyBy, durations) => {
     tracks[st.id].nextEnd=start;
   }
   Object.keys(tracks).forEach(id=>{
-    const sp=tracks[id].stylist?.specialty;
-    if (sp==="both"){const hs=tracks[id].slots.filter(s=>s.type==="hair");tracks[id].nextEnd=hs.length?Math.min(...hs.map(s=>s.start)):readyByMins;}
-    else if(sp==="makeup"){tracks[id].nextEnd=readyByMins;}
+    const slots=tracks[id].slots;
+    if(slots.length){
+      tracks[id].nextEnd=Math.min(...slots.map(s=>s.start));
+    } else {
+      tracks[id].nextEnd=readyByMins;
+    }
   });
   for (const m of sorted.filter(m=>m.services==="makeup"||m.services==="both")) {
     const dur=m.makeupMins||(m.role==="bride"?brideMakeup:defMakeup), st=pickBest(mkupSt);
