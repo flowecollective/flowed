@@ -719,7 +719,7 @@ const DayTimeline = ({day,members,stylists,durations,totalDays}) => {
   );
 };
 
-const Step4 = ({members,stylists,details}) => {
+const Step4 = ({members,stylists,details,eventId}) => {
   const days=details.days||[{id:"legacy",label:"Wedding Day",date:details.date||"",ceremonyTime:details.ceremonyTime||"",readyBy:details.readyBy||""}];
   const [activeDay,setActiveDay]=useState(days[0]?.id);
   const [copied,setCopied]=useState(false);
@@ -772,9 +772,10 @@ const Step4 = ({members,stylists,details}) => {
           );
         })}
       </div>
-      <div style={{display:"flex",justifyContent:"center",gap:10}}>
+      <div style={{display:"flex",justifyContent:"center",gap:10,flexWrap:"wrap"}}>
         <Btn onClick={copyText} variant="secondary">{copied?"✓ Copied!":"📋 Copy Timeline"}</Btn>
         <Btn onClick={()=>exportPdf(days,members,stylists,details)} variant="primary">Export PDF</Btn>
+        {eventId&&<Btn variant="ghost" onClick={()=>{const url=`${window.location.origin}?timeline=${eventId}`;navigator.clipboard.writeText(url).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2200);});}}>{copied?"✓ Copied!":"🔗 Copy Link"}</Btn>}
       </div>
     </div>
   );
@@ -1128,18 +1129,26 @@ export default function App() {
   const [roster,setRoster]=useState([]);
   const saveTimer=useRef(null);
   const [clientMode,setClientMode]=useState(null);
+  const [timelineMode,setTimelineMode]=useState(null);
 
-  // Detect client mode from URL
+  // Detect mode from URL
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     const cid=params.get("client");
+    const tid=params.get("timeline");
     if(cid) setClientMode(cid);
+    if(tid) setTimelineMode(tid);
   },[]);
 
   // Load events + roster from Supabase on mount
   useEffect(()=>{
     if(clientMode){
       supabase.from("events").select("*").eq("id",clientMode).single()
+        .then(({data,error})=>{
+          if(!error&&data) setEvents([fromRow(data)]);
+        });
+    } else if(timelineMode){
+      supabase.from("events").select("*").eq("id",timelineMode).single()
         .then(({data,error})=>{
           if(!error&&data) setEvents([fromRow(data)]);
         });
@@ -1207,6 +1216,28 @@ export default function App() {
   const packState=openEvent?.packState||{};
   const setPackState=(fn)=>updateEvent(openId,e=>({...e,packState:typeof fn==="function"?fn(e.packState):fn}));
 
+  // Timeline mode — read-only timeline view
+  if (timelineMode) {
+    const ev=events.find(e=>e.id===timelineMode);
+    if(!ev) return <div style={{minHeight:"100vh",background:"#FAF7F2",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Jost',sans-serif",color:"#9E9590"}}>Loading timeline...</div>;
+    return (
+      <div style={{minHeight:"100vh",background:"#FAF7F2",paddingBottom:60}}>
+        <div style={{background:"#1C1815",padding:"17px 32px",marginBottom:36,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:"#D4B896",letterSpacing:".14em"}}>FLOWE</div>
+            <div style={{fontSize:10,color:"#6B6058",letterSpacing:".18em",textTransform:"uppercase",marginTop:1}}>Event Beauty Planner</div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            {ev.details.coupleName&&<span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:"#D4B896",fontStyle:"italic"}}>{ev.details.coupleName}</span>}
+          </div>
+        </div>
+        <div style={{maxWidth:720,margin:"0 auto",padding:"0 16px"}}>
+          <Step4 members={ev.members} stylists={ev.stylists} details={ev.details}/>
+        </div>
+      </div>
+    );
+  }
+
   // Client mode — only steps 1 & 2
   if (clientMode) {
     const clientEvent=events.find(e=>e.id===clientMode);
@@ -1242,7 +1273,7 @@ export default function App() {
         {step===1&&<Step1 d={details} set={setDetails}/>}
         {step===2&&<Step2 members={members} setMembers={setMembers} stylists={stylists} days={details.days} eventId={openId} coupleName={details.coupleName}/>}
         {step===3&&<Step3 stylists={stylists} setStylists={setStylists} roster={roster} addToRoster={addToRoster} updateRoster={updateRoster} removeFromRoster={removeFromRoster}/>}
-        {step===4&&<Step4 members={members} stylists={stylists} details={details}/>}
+        {step===4&&<Step4 members={members} stylists={stylists} details={details} eventId={openId}/>}
         {step===5&&<Step5 members={members} details={details} packState={packState} setPackState={setPackState}/>}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:26}}>
           {step>1?<Btn variant="ghost" onClick={()=>setStep(s=>s-1)}>← Back</Btn>:<div/>}
