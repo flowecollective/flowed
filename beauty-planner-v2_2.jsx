@@ -557,7 +557,7 @@ td{padding:8px 10px;font-size:13px;border-bottom:1px solid #F0EAE2}
   if (details.videographer) html += `<div class="meta">🎥 Videographer: ${esc(details.videographer)}</div>`;
 
   days.forEach((day) => {
-    const dayMembers = members.filter(m => { const ids = m.dayIds || []; return ids.length === 0 || ids.includes(day.id); });
+    const dayMembers = filterByDay(members, day, days.length);
     const { tracks, start } = buildSchedule(dayMembers, stylists, day.readyBy, details);
 
     if (days.length > 1 || day.label !== "Wedding Day") {
@@ -619,11 +619,14 @@ const GanttBar = ({slots,start,end}) => {
   );
 };
 
-const DayTimeline = ({day,members,stylists,durations}) => {
-  const dayMembers=members.filter(m=>{
-    const ids=m.dayIds||[];
-    return ids.length===0||ids.includes(day.id);
-  });
+const filterByDay = (members, day, totalDays) => members.filter(m=>{
+  const ids=m.dayIds||[];
+  if(totalDays<=1) return true;
+  return ids.includes(day.id);
+});
+
+const DayTimeline = ({day,members,stylists,durations,totalDays}) => {
+  const dayMembers=filterByDay(members,day,totalDays);
   const {tracks,start,end}=useMemo(()=>buildSchedule(dayMembers,stylists,day.readyBy,durations),[dayMembers,stylists,day.readyBy,durations]);
   if(!day.readyBy) return <div style={{textAlign:"center",padding:"30px 20px",color:"#9E9590"}}><p style={{fontSize:13}}>Set a ready-by time for this day in Step 1.</p></div>;
   if(!dayMembers.length) return <div style={{textAlign:"center",padding:"30px 20px",color:"#9E9590"}}><p style={{fontSize:13}}>No party members assigned to this day.</p></div>;
@@ -681,7 +684,7 @@ const Step4 = ({members,stylists,details}) => {
   const copyText=()=>{
     const lines=[`✦ ${details.coupleName||"Wedding"} — Hair & Makeup Timeline`,(details.venue||details.location)&&`📍 ${[details.venue,details.location].filter(Boolean).join(", ")}`,details.room&&`🏨 ${details.room}`,""].filter(v=>v!==false&&v!==undefined&&v!=="");
     days.forEach(day=>{
-      const dayMembers=members.filter(m=>{const ids=m.dayIds||[];return ids.length===0||ids.includes(day.id);});
+      const dayMembers=filterByDay(members,day,days.length);
       const {tracks,start}=buildSchedule(dayMembers,stylists,day.readyBy,details);
       if(days.length>1) lines.push(`━━ ${day.label}${day.date?` · ${fmtDate(day.date)}`:""}  ━━`);
       else if(day.date) lines.push(`📅 ${new Date(day.date+"T12:00").toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}`);
@@ -708,7 +711,7 @@ const Step4 = ({members,stylists,details}) => {
           </button>
         ))}
       </div>}
-      <DayTimeline day={currentDay} members={members} stylists={stylists} durations={details}/>
+      <DayTimeline day={currentDay} members={members} stylists={stylists} durations={details} totalDays={days.length}/>
       <Divider label="Client Reference Cards"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:26}}>
         {members.map(m=>{
