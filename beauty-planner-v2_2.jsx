@@ -724,7 +724,7 @@ const Step4 = ({members,stylists,details}) => {
       </div>
       {days.length>1&&<div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:22}}>
         {days.map(day=>(
-          <button key={day.id} onClick={()=>setActiveDay(day.id)} style={{fontFamily:"'Jost',sans-serif",fontSize:12,letterSpacing:".06em",color:activeDay===day.id?"#fff":"#6B6058",background:activeDay===day.id?"#1C1815":"#fff",border:`1px solid ${activeDay===day.id?"#1C1815":"#E0D8CF"}`,borderRadius:20,padding:"8px 16px",cursor:"pointer",transition:"all .15s"}}>
+          <button key={day.id} onClick={()=>setActiveDay(day.id)} style={{fontFamily:"'Jost',sans-serif",fontSize:12,letterSpacing:".06em",color:activeDay===day.id?"#fff":"#6B6058",background:activeDay===day.id?"#1C1815":"#fff",border:`1px solid ${activeDay===day.id?"#1C1815":"#E0D8CF"}`,borderRadius:20,padding:"8px 20px",cursor:"pointer",transition:"all .15s",whiteSpace:"nowrap"}}>
             {day.label}{day.date?` · ${new Date(day.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})}`:""}
           </button>
         ))}
