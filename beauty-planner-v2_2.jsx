@@ -210,9 +210,7 @@ const Lightbox = ({urls,index,onClose}) => {
   return (
     <div className="fade-in" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(28,24,21,.9)",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <button onClick={onClose} style={{position:"absolute",top:16,right:20,background:"none",border:"none",color:"#fff",fontSize:28,cursor:"pointer",zIndex:10,opacity:.7}}>×</button>
-      {urls.length>1&&<button onClick={prev} style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,.15)",border:"none",color:"#fff",fontSize:24,width:40,height:40,borderRadius:"50%",cursor:"pointer",zIndex:10}}>‹</button>}
       <img src={urls[cur]} alt="inspo" onClick={onClose} style={{maxWidth:"90vw",maxHeight:"80vh",borderRadius:10,objectFit:"contain",boxShadow:"0 8px 40px rgba(0,0,0,.4)",cursor:"zoom-out"}}/>
-      {urls.length>1&&<button onClick={next} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,.15)",border:"none",color:"#fff",fontSize:24,width:40,height:40,borderRadius:"50%",cursor:"pointer",zIndex:10}}>›</button>}
       {urls.length>1&&<div style={{position:"absolute",bottom:20,left:"50%",transform:"translateX(-50%)",display:"flex",gap:6}}>
         {urls.map((_,i)=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:i===cur?"#fff":"rgba(255,255,255,.35)",transition:"background .2s"}}/>)}
       </div>}
