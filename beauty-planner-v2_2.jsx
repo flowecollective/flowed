@@ -392,7 +392,7 @@ const MemberCard = ({m,stylists,onEdit,onRemove}) => {
   );
 };
 
-const Step2 = ({members,setMembers,stylists,days}) => {
+const Step2 = ({members,setMembers,stylists,days,eventId,coupleName}) => {
   const [editing,setEditing]=useState(null);
   const [draft,setDraft]=useState(null);
   const allDayIds=(days||[]).map(d=>d.id);
@@ -425,6 +425,7 @@ const Step2 = ({members,setMembers,stylists,days}) => {
         :<div key={m.id} {...dragMember(i)} style={{cursor:"grab"}}><MemberCard m={m} stylists={stylists} onEdit={()=>startEdit(m.id)} onRemove={()=>remove(m.id)}/></div>
       )}
       {editing===null&&<button onClick={startAdd} style={{width:"100%",padding:"13px",border:"1.5px dashed #D4C4B4",borderRadius:10,background:"transparent",color:"#A0988E",fontSize:14,cursor:"pointer",fontFamily:"'Jost',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}><span style={{fontSize:18,lineHeight:1}}>+</span> Add Party Member</button>}
+      {eventId&&<div style={{display:"flex",justifyContent:"center",marginTop:20}}><ShareBtn eventId={eventId} coupleName={coupleName}/></div>}
     </div>
   );
 };
@@ -1180,7 +1181,6 @@ export default function App() {
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           {details.coupleName&&<span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:"#D4B896",fontStyle:"italic"}}>{details.coupleName}</span>}
           {(()=>{const dd=(details.days||[]).filter(d=>d.date).sort((a,b)=>a.date.localeCompare(b.date));if(!dd.length) return null;const fmt=d=>new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});return <span style={{fontSize:12,color:"#6B6058"}}>{dd.length===1?fmt(dd[0]):`${fmt(dd[0])} – ${fmt(dd[dd.length-1])}`}</span>;})()}
-          <ShareBtn eventId={openId} coupleName={details.coupleName}/>
           <select value={openEvent?.status||"pending"} onChange={e=>updateEvent(openId,ev=>({...ev,status:e.target.value}))}
             style={{fontFamily:"'Jost',sans-serif",fontSize:11,color:"#D4B896",background:"transparent",border:"1px solid #3A3028",borderRadius:5,padding:"4px 8px",width:"auto",letterSpacing:".06em"}}>
             <option value="pending">Pending</option>
@@ -1192,7 +1192,7 @@ export default function App() {
       <div style={{maxWidth:720,margin:"0 auto",padding:"0 16px"}}>
         <StepNav step={step} setStep={setStep}/>
         {step===1&&<Step1 d={details} set={setDetails}/>}
-        {step===2&&<Step2 members={members} setMembers={setMembers} stylists={stylists} days={details.days}/>}
+        {step===2&&<Step2 members={members} setMembers={setMembers} stylists={stylists} days={details.days} eventId={openId} coupleName={details.coupleName}/>}
         {step===3&&<Step3 stylists={stylists} setStylists={setStylists} roster={roster} addToRoster={addToRoster} updateRoster={updateRoster} removeFromRoster={removeFromRoster}/>}
         {step===4&&<Step4 members={members} stylists={stylists} details={details}/>}
         {step===5&&<Step5 members={members} details={details} packState={packState} setPackState={setPackState}/>}
