@@ -684,6 +684,45 @@ const fromRow = (r) => ({
   lastStep: r.last_step || 1,
 });
 
+/* ── Share Button ──────────────────────────────────────────────────────── */
+const ShareBtn = ({eventId, coupleName}) => {
+  const [open,setOpen]=useState(false);
+  const [copied,setCopied]=useState(false);
+  const url=`${window.location.origin}?client=${eventId}`;
+  const msg=`Hi${coupleName?` ${coupleName}`:""}! Please fill out your beauty details for your upcoming event: ${url}`;
+
+  const handleShare=()=>{
+    if(navigator.share){
+      navigator.share({title:"FLOWE Beauty Planner",text:msg,url}).catch(()=>{});
+    } else {
+      setOpen(o=>!o);
+    }
+  };
+  const copy=()=>{navigator.clipboard.writeText(url);setCopied(true);setTimeout(()=>setCopied(false),2000);};
+  const sms=()=>{window.open(`sms:?&body=${encodeURIComponent(msg)}`);setOpen(false);};
+  const email=()=>{window.open(`mailto:?subject=${encodeURIComponent("Your Beauty Planner Form — FLOWE")}&body=${encodeURIComponent(msg)}`);setOpen(false);};
+
+  return (
+    <div style={{position:"relative"}}>
+      <button onClick={handleShare} style={{fontFamily:"'Jost',sans-serif",fontSize:10,color:"#fff",background:"#B8956A",border:"none",borderRadius:5,padding:"5px 12px",cursor:"pointer",letterSpacing:".06em",whiteSpace:"nowrap",fontWeight:500}}>Send to Client</button>
+      {open&&<div className="fade-in" style={{position:"absolute",top:"100%",right:0,marginTop:8,background:"#fff",border:"1px solid #E0D8CF",borderRadius:10,boxShadow:"0 6px 24px rgba(0,0,0,.1)",padding:6,zIndex:100,minWidth:180,display:"flex",flexDirection:"column",gap:2}}>
+        <button onClick={sms} style={{fontFamily:"'Jost',sans-serif",fontSize:13,color:"#1C1815",background:"transparent",border:"none",borderRadius:6,padding:"10px 14px",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:16}}>💬</span> Text Message
+        </button>
+        <button onClick={email} style={{fontFamily:"'Jost',sans-serif",fontSize:13,color:"#1C1815",background:"transparent",border:"none",borderRadius:6,padding:"10px 14px",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:16}}>✉️</span> Email
+        </button>
+        <button onClick={()=>{copy();setOpen(false);}} style={{fontFamily:"'Jost',sans-serif",fontSize:13,color:"#1C1815",background:"transparent",border:"none",borderRadius:6,padding:"10px 14px",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:16}}>🔗</span> {copied?"Copied!":"Copy Link"}
+        </button>
+        <div style={{height:1,background:"#E8E0D8",margin:"2px 8px"}}/>
+        <button onClick={()=>setOpen(false)} style={{fontFamily:"'Jost',sans-serif",fontSize:12,color:"#A0988E",background:"transparent",border:"none",padding:"6px 14px",cursor:"pointer",textAlign:"center"}}>Cancel</button>
+      </div>}
+      {open&&<div onClick={()=>setOpen(false)} style={{position:"fixed",inset:0,zIndex:99}}/>}
+    </div>
+  );
+};
+
 const CLIENT_STEPS=[{n:1,l:"Event"},{n:2,l:"Party"}];
 
 const ClientView = ({event,updateEvent}) => {
@@ -819,7 +858,7 @@ export default function App() {
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           {details.coupleName&&<span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:"#D4B896",fontStyle:"italic"}}>{details.coupleName}</span>}
           {details.date&&<span style={{fontSize:12,color:"#6B6058"}}>{new Date(details.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>}
-          <button onClick={()=>{const url=`${window.location.origin}?client=${openId}`;navigator.clipboard.writeText(url);}} style={{fontFamily:"'Jost',sans-serif",fontSize:10,color:"#B8956A",background:"transparent",border:"1px solid #B8956A",borderRadius:5,padding:"4px 10px",cursor:"pointer",letterSpacing:".06em",whiteSpace:"nowrap"}}>Copy Client Link</button>
+          <ShareBtn eventId={openId} coupleName={details.coupleName}/>
           <select value={openEvent?.status||"pending"} onChange={e=>updateEvent(openId,ev=>({...ev,status:e.target.value}))}
             style={{fontFamily:"'Jost',sans-serif",fontSize:11,color:"#D4B896",background:"transparent",border:"1px solid #3A3028",borderRadius:5,padding:"4px 8px",width:"auto",letterSpacing:".06em"}}>
             <option value="pending">Pending</option>
