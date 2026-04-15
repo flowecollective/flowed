@@ -349,13 +349,29 @@ const Step1 = ({d,set}) => {
 };
 
 /* ── Step 2: Party Members ──────────────────────────────────────────────── */
-const blankM = (dayIds) => ({id:uid(),name:"",role:"bridesmaid",services:"both",stylistId:"",urls:[],notes:"",dayIds:dayIds||[],hairMins:0,makeupMins:0,dayServices:{}});
+const blankM = (dayIds) => ({id:uid(),name:"",role:"bridesmaid",services:"both",stylistId:"",urls:[],notes:"",dayIds:dayIds||[],hairMins:0,makeupMins:0,dayServices:{},photo:""});
 const getMemberServices = (m, dayId) => (dayId && m.dayServices && m.dayServices[dayId]) || m.services || "both";
+
+const Avatar = ({name,role,photo,size=38}) => {
+  const ri=getRoleInfo(role);
+  return photo
+    ?<img src={photo} alt={name} style={{width:size,height:size,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
+    :<div style={{width:size,height:size,borderRadius:"50%",background:ri.bg,color:ri.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*.4,fontWeight:600,fontFamily:"'Cormorant Garamond',serif",flexShrink:0}}>{(name||"?")[0].toUpperCase()}</div>;
+};
 
 const MemberForm = ({m,stylists,days,onChange,onSave,onRemove}) => {
   const [urlIn,setUrlIn]=useState("");
   const [uploading,setUploading]=useState(false);
   const fileRef=useRef(null);
+  const photoRef=useRef(null);
+  const handlePhoto=async(e)=>{
+    const file=e.target.files?.[0];if(!file) return;
+    const ext=file.name.split(".").pop()||"jpg";
+    const path=`${m.id}/photo.${ext}`;
+    const {error}=await supabase.storage.from("inspo").upload(path,file,{contentType:file.type,upsert:true});
+    if(!error){const {data}=supabase.storage.from("inspo").getPublicUrl(path);if(data?.publicUrl) onChange("photo",data.publicUrl+"?t="+Date.now());}
+    if(photoRef.current) photoRef.current.value="";
+  };
   const addUrl=()=>{const u=urlIn.trim();if(u&&!m.urls.includes(u)){onChange("urls",[...m.urls,u]);setUrlIn("");}};
   const handleUpload=async(e)=>{
     const files=Array.from(e.target.files||[]);
@@ -377,6 +393,14 @@ const MemberForm = ({m,stylists,days,onChange,onSave,onRemove}) => {
   };
   return (
     <div className="fade-in" style={{background:"#FFFCF8",border:"1.5px solid #B8956A",borderRadius:10,padding:"18px 20px",marginBottom:10}}>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+        <div onClick={()=>photoRef.current?.click()} style={{cursor:"pointer",position:"relative"}}>
+          <Avatar name={m.name} role={m.role} photo={m.photo} size={48}/>
+          <div style={{position:"absolute",bottom:-2,right:-2,width:18,height:18,borderRadius:"50%",background:"#B8956A",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,border:"2px solid #FFFCF8"}}>+</div>
+        </div>
+        <input ref={photoRef} type="file" accept="image/*" onChange={handlePhoto} style={{display:"none"}}/>
+        <div style={{fontSize:12,color:"#9E9590"}}>{m.photo?"Tap photo to change":"Add a photo"}</div>
+      </div>
       <div className="grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>
         <Field label="Full Name"><input value={m.name} onChange={e=>onChange("name",e.target.value)} placeholder="e.g. Emma Rossi" autoFocus/></Field>
         <Field label="Role"><select value={m.role} onChange={e=>onChange("role",e.target.value)}>{ROLES.map(r=><option key={r.v} value={r.v}>{r.l}</option>)}</select></Field>
@@ -435,10 +459,10 @@ const MemberForm = ({m,stylists,days,onChange,onSave,onRemove}) => {
 };
 
 const MemberCard = ({m,stylists,onEdit,onRemove}) => {
-  const ri=getRoleInfo(m.role), sty=stylists.find(s=>s.id===m.stylistId);
+  const sty=stylists.find(s=>s.id===m.stylistId);
   return (
     <div className="fade-in" style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:10,padding:"13px 17px",display:"flex",gap:13,alignItems:"flex-start",marginBottom:8}}>
-      <div style={{width:38,height:38,borderRadius:"50%",background:ri.bg,color:ri.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:600,fontFamily:"'Cormorant Garamond',serif",flexShrink:0}}>{(m.name||"?")[0].toUpperCase()}</div>
+      <Avatar name={m.name} role={m.role} photo={m.photo}/>
       <div style={{flex:1,minWidth:0}}>
         <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap",marginBottom:7}}>
           <span style={{fontWeight:500,fontSize:15}}>{m.name||"(Unnamed)"}</span>
@@ -779,11 +803,10 @@ const Step4 = ({members,stylists,details,eventId}) => {
       <Divider label="Client Reference Cards"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:26}}>
         {members.map(m=>{
-          const ri=getRoleInfo(m.role);
           return (
             <div key={m.id} style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:10,padding:"14px"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                <div style={{width:34,height:34,borderRadius:"50%",background:ri.bg,color:ri.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:600,fontFamily:"'Cormorant Garamond',serif",flexShrink:0}}>{(m.name||"?")[0].toUpperCase()}</div>
+                <Avatar name={m.name} role={m.role} photo={m.photo} size={34}/>
                 <div><div style={{fontWeight:500,fontSize:14}}>{m.name||"(Unnamed)"}</div><div style={{marginTop:3}}><RolePill role={m.role}/></div></div>
               </div>
               <ServicePill svc={m.services}/>
