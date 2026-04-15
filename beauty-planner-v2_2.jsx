@@ -197,7 +197,7 @@ const ServicePill = ({svc}) => {
   const s=getServiceInfo(svc);
   const colors={hair:{bg:"#EBF2ED",color:"#4A7A5A"},makeup:{bg:"#F8EDED",color:"#96606A"},both:{bg:"#F7EFDF",color:"#9A7548"}};
   const c=colors[svc]||colors.both;
-  return <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:11,fontWeight:500,background:c.bg,color:c.color}}><span style={{fontSize:9}}>{s.icon}</span>{s.l}</span>;
+  return <span style={{display:"inline-flex",alignItems:"center",padding:"2px 9px",borderRadius:20,fontSize:11,fontWeight:500,background:c.bg,color:c.color}}>{s.l}</span>;
 };
 const Lightbox = ({urls,index,onClose}) => {
   const [cur,setCur]=useState(index);
