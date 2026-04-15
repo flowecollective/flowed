@@ -466,7 +466,7 @@ const Step2 = ({members,setMembers,stylists,days,eventId,coupleName}) => {
   const startEdit=(id)=>{setDraft(members.find(m=>m.id===id));setEditing(id);};
   const changeField=(k,v)=>{const u={...draft,[k]:v};setDraft(u);setMembers(p=>p.map(m=>m.id===editing?u:m));};
   const save=()=>{setEditing(null);setDraft(null);};
-  const remove=(id)=>{setMembers(p=>p.filter(m=>m.id!==id));if(editing===id){setEditing(null);setDraft(null);}};
+  const remove=(id)=>{const m=members.find(x=>x.id===id);if(!confirm(`Remove ${m?.name||"this person"} from the party?`)) return;setMembers(p=>p.filter(m=>m.id!==id));if(editing===id){setEditing(null);setDraft(null);}};
   const hairCt=members.filter(m=>m.services!=="makeup").length;
   const mkupCt=members.filter(m=>m.services!=="hair").length;
   const dragMember=useDragReorder(members,setMembers);
@@ -520,6 +520,8 @@ const Step3 = ({stylists,setStylists,roster,addToRoster,updateRoster,removeFromR
     setEditDraft(null);
   };
   const deleteFromRoster=(id)=>{
+    const s=roster.find(x=>x.id===id);
+    if(!confirm(`Remove ${s?.name||"this person"} from the team? This applies to all events.`)) return;
     removeFromRoster(id);
     setStylists(p=>p.filter(x=>x.id!==id));
   };
