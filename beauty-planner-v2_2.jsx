@@ -26,11 +26,13 @@ button{cursor:pointer;font-family:'Jost',sans-serif;border:none;outline:none}
   .grid-3{grid-template-columns:1fr !important}
   .grid-4{grid-template-columns:1fr 1fr !important}
   .grid-stats{grid-template-columns:repeat(2,1fr) !important}
-  .top-bar{flex-wrap:wrap !important;padding:12px 16px !important;gap:8px !important}
+  .top-bar{padding:10px 14px !important;display:grid !important;grid-template-columns:36px 1fr auto !important;align-items:center !important;gap:8px !important}
+  .top-bar .bar-left{gap:0 !important}
   .top-bar .bar-logo{display:none !important}
-  .top-bar .bar-brand{font-size:14px !important;letter-spacing:.1em !important}
   .top-bar .bar-sub{display:none !important}
-  .top-bar .bar-right{flex-wrap:wrap !important;justify-content:flex-end !important;gap:8px !important}
+  .top-bar .bar-center{display:flex !important;flex-direction:column !important;align-items:center !important}
+  .top-bar .bar-right .bar-name,.top-bar .bar-right .bar-date{display:none !important}
+  .top-bar .bar-right{gap:0 !important}
   .day-grid{grid-template-columns:1fr 1fr !important}
   .day-grid .day-full{grid-column:1/-1 !important}
   .grid-4>div>div:first-child{min-height:30px;display:flex;align-items:flex-end}
@@ -1304,17 +1306,21 @@ export default function App() {
   return (
     <div style={{minHeight:"100vh",background:"#FAF7F2",paddingBottom:60}}>
       <div className="top-bar" style={{background:"#1C1815",padding:"17px 32px",marginBottom:36,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",alignItems:"center",gap:16}}>
-          <button onClick={()=>setOpenId(null)} style={{background:"none",border:"none",color:"#6B6058",cursor:"pointer",padding:0,display:"flex",alignItems:"center"}} title="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9.5L12 3l9 6.5"/><path d="M19 13v6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-6"/></svg></button>
+        <div className="bar-left" style={{display:"flex",alignItems:"center",gap:16}}>
+          <button onClick={()=>setOpenId(null)} style={{background:"none",border:"none",color:"#6B6058",cursor:"pointer",padding:4,display:"flex",alignItems:"center"}} title="Home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10.5L12 4l9 6.5"/><path d="M5 12v7a1 1 0 0 0 1 1h4v-5h4v5h4a1 1 0 0 0 1-1v-7"/></svg></button>
           <div className="bar-logo" style={{width:1,height:20,background:"#3A3028"}}/>
           <div className="bar-logo">
-            <div className="bar-brand" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:"#D4B896",letterSpacing:".14em"}}>FLOWE</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:"#D4B896",letterSpacing:".14em"}}>FLOWE</div>
             <div className="bar-sub" style={{fontSize:10,color:"#6B6058",letterSpacing:".18em",textTransform:"uppercase",marginTop:1}}>Event Beauty Planner</div>
           </div>
         </div>
-        <div className="bar-right" style={{display:"flex",alignItems:"center",gap:12}}>
+        <div className="bar-center" style={{display:"none"}}>
           {details.coupleName&&<span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:"#D4B896",fontStyle:"italic",whiteSpace:"nowrap"}}>{details.coupleName}</span>}
           {(()=>{const dd=(details.days||[]).filter(d=>d.date).sort((a,b)=>a.date.localeCompare(b.date));if(!dd.length) return null;const fmt=d=>new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});return <span style={{fontSize:11,color:"#6B6058",whiteSpace:"nowrap"}}>{dd.length===1?fmt(dd[0]):`${fmt(dd[0])} – ${fmt(dd[dd.length-1])}`}</span>;})()}
+        </div>
+        <div className="bar-right" style={{display:"flex",alignItems:"center",gap:12}}>
+          <span className="bar-name" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:"#D4B896",fontStyle:"italic",whiteSpace:"nowrap"}}>{details.coupleName||""}</span>
+          {(()=>{const dd=(details.days||[]).filter(d=>d.date).sort((a,b)=>a.date.localeCompare(b.date));if(!dd.length) return null;const fmt=d=>new Date(d.date+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});return <span className="bar-date" style={{fontSize:11,color:"#6B6058",whiteSpace:"nowrap"}}>{dd.length===1?fmt(dd[0]):`${fmt(dd[0])} – ${fmt(dd[dd.length-1])}`}</span>;})()}
           <select value={openEvent?.status||"pending"} onChange={e=>updateEvent(openId,ev=>({...ev,status:e.target.value}))}
             style={{fontFamily:"'Jost',sans-serif",fontSize:11,color:"#D4B896",background:"transparent",border:"1px solid #3A3028",borderRadius:5,padding:"4px 8px",width:"auto",letterSpacing:".06em"}}>
             <option value="pending">Pending</option>
