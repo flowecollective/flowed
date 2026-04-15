@@ -68,14 +68,14 @@ const PRIORITY = { bride:0, moh:1, bridesmaid:2, mother_bride:3, mother_groom:4,
 const TBlock = { hair:{bg:"#EBF2ED",border:"#7B9E87",text:"#3A6B4C"}, makeup:{bg:"#F8EDED",border:"#C4979A",text:"#8B4A55"} };
 
 const PACKING_MASTER = [
-  { id:"hair-tools",   label:"Hair Tools",              icon:"✦", items:["Flat iron","Curling iron / wand","Blow dryer","Diffuser attachment","Round brushes (assorted)","Teasing brush","Tail comb","Wide tooth comb","Sectioning clips (large)","Bobby pins, assorted","U-pins / hair pins","Hair elastics, clear + black","Sectioning spray bottle"] },
-  { id:"hair-prod",    label:"Hair Products",           icon:"◈", items:["Heat protectant spray","Hairspray, medium hold","Hairspray, strong hold","Texturizing spray","Dry shampoo","Shine serum / oil","Mousse / volumizer","Pomade / edge control","Setting spray"] },
-  { id:"mkup-tools",   label:"Makeup Tools",            icon:"✧", items:["Foundation brushes","Blending sponges","Eyeshadow brushes, flat + blending","Powder brush","Blush + contour brush","Fan brush","Lip brush","Tweezers","Lash applicator","Small scissors","Palette spatula"] },
-  { id:"mkup-prod",    label:"Makeup Products",         icon:"◇", items:["Primer, face + eye","Foundation (shade range)","Concealer","Setting powder","Contour palette","Blush","Highlight","Eyeshadow palettes","Eyeliner, pencil + liquid","Mascara","False lashes, assorted styles","Lash glue","Lip liner","Lipstick / gloss, assorted","Brow products","Setting spray"] },
-  { id:"skincare",     label:"Skincare Prep",           icon:"○", items:["Facial mist","Lightweight moisturizer","Eye patches","Blotting papers","Barrier / finishing cream"] },
-  { id:"disposables",  label:"Disposables & Sanitation",icon:"△", items:["Disposable lip applicators","Disposable mascara wands","Cotton rounds","Cotton swabs","Tissues","Alcohol wipes","Gloves","Neck strips / cape liners"] },
-  { id:"comfort",      label:"Client Comfort",          icon:"☽", items:["Styling capes / robes","Hand mirror (client-facing)","Snacks for clients","Water / beverages","Touch-up kit for bride"] },
-  { id:"team",         label:"Team & Admin",            icon:"□", items:["Portable charger","Extension cord / power strip","Surge protector","Bluetooth speaker","Phone stand / ring light","Business cards","Tip envelopes","Contract copies","Emergency kit (pain reliever, bandages, safety pins)","Trash bags","Snacks + water for team"] },
+  { id:"hair-tools",   label:"Hair Tools",              icon:"💇‍♀️", items:["Flat iron","Curling iron / wand","Blow dryer","Diffuser attachment","Round brushes (assorted)","Teasing brush","Tail comb","Wide tooth comb","Sectioning clips (large)","Bobby pins, assorted","U-pins / hair pins","Hair elastics, clear + black","Sectioning spray bottle"] },
+  { id:"hair-prod",    label:"Hair Products",           icon:"🧴", items:["Heat protectant spray","Hairspray, medium hold","Hairspray, strong hold","Texturizing spray","Dry shampoo","Shine serum / oil","Mousse / volumizer","Pomade / edge control","Setting spray"] },
+  { id:"mkup-tools",   label:"Makeup Tools",            icon:"🖌️", items:["Foundation brushes","Blending sponges","Eyeshadow brushes, flat + blending","Powder brush","Blush + contour brush","Fan brush","Lip brush","Tweezers","Lash applicator","Small scissors","Palette spatula"] },
+  { id:"mkup-prod",    label:"Makeup Products",         icon:"💄", items:["Primer, face + eye","Foundation (shade range)","Concealer","Setting powder","Contour palette","Blush","Highlight","Eyeshadow palettes","Eyeliner, pencil + liquid","Mascara","False lashes, assorted styles","Lash glue","Lip liner","Lipstick / gloss, assorted","Brow products","Setting spray"] },
+  { id:"skincare",     label:"Skincare Prep",           icon:"🧖‍♀️", items:["Facial mist","Lightweight moisturizer","Eye patches","Blotting papers","Barrier / finishing cream"] },
+  { id:"disposables",  label:"Disposables & Sanitation",icon:"🧤", items:["Disposable lip applicators","Disposable mascara wands","Cotton rounds","Cotton swabs","Tissues","Alcohol wipes","Gloves","Neck strips / cape liners"] },
+  { id:"comfort",      label:"Client Comfort",          icon:"🪞", items:["Styling capes / robes","Hand mirror (client-facing)","Snacks for clients","Water / beverages","Touch-up kit for bride"] },
+  { id:"team",         label:"Team & Admin",            icon:"📋", items:["Portable charger","Extension cord / power strip","Surge protector","Bluetooth speaker","Phone stand / ring light","Business cards","Tip envelopes","Contract copies","Emergency kit (pain reliever, bandages, safety pins)","Trash bags","Snacks + water for team"] },
 ];
 
 /* ── Utilities ──────────────────────────────────────────────────────────── */
@@ -698,7 +698,7 @@ const DayTimeline = ({day,members,stylists,durations,totalDays}) => {
       <div className="grid-stats" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
         {[{l:"Party Size",v:dayMembers.length,icon:"👥"},{l:"Hair",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="hair"||sv==="both";}).length,icon:"💇‍♀️"},{l:"Makeup",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="makeup"||sv==="both";}).length,icon:"💄"},{l:"Tracks",v:tracks.length,icon:"🗓"}].map(stat=>(
           <div key={stat.l} style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:10,padding:"13px 10px",textAlign:"center"}}>
-            <div style={{fontSize:16,marginBottom:3,filter:"grayscale(1) brightness(1.2) sepia(1) hue-rotate(-15deg) saturate(.6) opacity(.75)"}}>{stat.icon}</div>
+            <div style={{fontSize:16,marginBottom:3,filter:"grayscale(1) sepia(1) hue-rotate(-15deg) saturate(.5) brightness(.85)"}}>{stat.icon}</div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,lineHeight:1}}>{stat.v}</div>
             <div style={{fontSize:11,color:"#9E9590",marginTop:3,letterSpacing:".04em"}}>{stat.l}</div>
           </div>
@@ -879,7 +879,7 @@ const Step5 = ({members,details,packState,setPackState}) => {
             <div onClick={()=>toggleCollapse(cat.id)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 18px",cursor:"pointer",transition:"background .12s"}}
               onMouseEnter={e=>e.currentTarget.style.background="#F7F2EC"} onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
               <div style={{display:"flex",alignItems:"center",gap:9}}>
-                <span style={{color:"#B8956A",fontSize:13}}>{cat.icon}</span>
+                <span style={{fontSize:15,filter:"grayscale(1) sepia(1) hue-rotate(-15deg) saturate(.5) brightness(.85)"}}>{cat.icon}</span>
                 <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:17,color:"#1C1815"}}>{cat.label}</span>
               </div>
               <div style={{display:"flex",alignItems:"center",gap:9}}>
