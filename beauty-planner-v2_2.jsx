@@ -696,14 +696,9 @@ const DayTimeline = ({day,members,stylists,durations,totalDays}) => {
     <div>
       {start!==null&&<p style={{fontSize:14,color:"#9E9590",textAlign:"center",marginBottom:16}}>Styling begins at <strong style={{color:"#B8956A"}}>{fmtTime(start)}</strong> · Ready by <strong style={{color:"#B8956A"}}>{fmtTime(parseTime(day.readyBy))}</strong></p>}
       <div className="grid-stats" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
-        {[
-          {l:"Party Size",v:dayMembers.length,icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8956A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>},
-          {l:"Hair",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="hair"||sv==="both";}).length,icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8956A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12c0 3 1.5 5.5 3.5 7"/><path d="M12 2c3 0 5.5 2.5 7 6"/><path d="M12 2v10"/><path d="M8 22c2-3 2-6 1-9"/><path d="M16 22c-2-3-2-6-1-9"/><path d="M12 22c0-3 0-6 0-9"/></svg>},
-          {l:"Makeup",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="makeup"||sv==="both";}).length,icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8956A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2v6l-2 2v4a5 5 0 0 0 10 0v-4l-2-2V2"/><path d="M9 2h6"/><path d="M7 14h10"/></svg>},
-          {l:"Tracks",v:tracks.length,icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8956A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>}
-        ].map(stat=>(
+        {[{l:"Party Size",v:dayMembers.length,icon:"👥"},{l:"Hair",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="hair"||sv==="both";}).length,icon:"💇‍♀️"},{l:"Makeup",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="makeup"||sv==="both";}).length,icon:"💄"},{l:"Tracks",v:tracks.length,icon:"🗓"}].map(stat=>(
           <div key={stat.l} style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:10,padding:"13px 10px",textAlign:"center"}}>
-            <div style={{display:"flex",justifyContent:"center",marginBottom:3}}>{stat.icon}</div>
+            <div style={{fontSize:16,marginBottom:3,filter:"grayscale(1) opacity(.6)"}}>{stat.icon}</div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,lineHeight:1}}>{stat.v}</div>
             <div style={{fontSize:11,color:"#9E9590",marginTop:3,letterSpacing:".04em"}}>{stat.l}</div>
           </div>
