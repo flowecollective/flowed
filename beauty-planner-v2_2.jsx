@@ -696,7 +696,7 @@ const DayTimeline = ({day,members,stylists,durations,totalDays}) => {
     <div>
       {start!==null&&<p style={{fontSize:14,color:"#9E9590",textAlign:"center",marginBottom:16}}>Styling begins at <strong style={{color:"#B8956A"}}>{fmtTime(start)}</strong> · Ready by <strong style={{color:"#B8956A"}}>{fmtTime(parseTime(day.readyBy))}</strong></p>}
       <div className="grid-stats" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
-        {[{l:"Party Size",v:dayMembers.length,icon:"✦"},{l:"Hair",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="hair"||sv==="both";}).length,icon:"✦"},{l:"Makeup",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="makeup"||sv==="both";}).length,icon:"◆"},{l:"Tracks",v:tracks.length,icon:"✂"}].map(stat=>(
+        {[{l:"Party Size",v:dayMembers.length,icon:"👥"},{l:"Hair",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="hair"||sv==="both";}).length,icon:"💇"},{l:"Makeup",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="makeup"||sv==="both";}).length,icon:"💄"},{l:"Tracks",v:tracks.length,icon:"🗓"}].map(stat=>(
           <div key={stat.l} style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:10,padding:"13px 10px",textAlign:"center"}}>
             <div style={{color:"#B8956A",fontSize:16,marginBottom:3}}>{stat.icon}</div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,lineHeight:1}}>{stat.v}</div>
