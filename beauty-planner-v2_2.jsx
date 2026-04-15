@@ -208,10 +208,12 @@ const Lightbox = ({urls,index,onClose}) => {
   const onTouchStart=(e)=>{touchRef.current=e.touches[0].clientX;};
   const onTouchEnd=(e)=>{if(touchRef.current===null) return;const diff=e.changedTouches[0].clientX-touchRef.current;if(Math.abs(diff)>50){diff<0?next():prev();}touchRef.current=null;};
   return (
-    <div className="fade-in" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(28,24,21,.9)",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <button onClick={onClose} style={{position:"absolute",top:16,right:20,background:"none",border:"none",color:"#fff",fontSize:28,cursor:"pointer",zIndex:10,opacity:.7}}>×</button>
-      <img src={urls[cur]} alt="inspo" onClick={onClose} style={{maxWidth:"90vw",maxHeight:"80vh",borderRadius:10,objectFit:"contain",boxShadow:"0 8px 40px rgba(0,0,0,.4)",cursor:"zoom-out"}}/>
-      {urls.length>1&&<div style={{position:"absolute",bottom:20,left:"50%",transform:"translateX(-50%)",display:"flex",gap:6}}>
+    <div className="fade-in" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{position:"fixed",top:0,left:0,width:"100vw",height:"100dvh",zIndex:9999,background:"rgba(28,24,21,.95)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"flex-end",padding:"env(safe-area-inset-top, 12px) 16px 8px",zIndex:10}}>
+        <button onClick={onClose} style={{background:"rgba(255,255,255,.15)",border:"none",color:"#fff",fontSize:20,width:36,height:36,borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+      </div>
+      <img src={urls[cur]} alt="inspo" onClick={onClose} style={{maxWidth:"88vw",maxHeight:"70dvh",borderRadius:10,objectFit:"contain",boxShadow:"0 8px 40px rgba(0,0,0,.4)",cursor:"zoom-out"}}/>
+      {urls.length>1&&<div style={{marginTop:16,display:"flex",gap:6}}>
         {urls.map((_,i)=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:i===cur?"#fff":"rgba(255,255,255,.35)",transition:"background .2s"}}/>)}
       </div>}
     </div>
