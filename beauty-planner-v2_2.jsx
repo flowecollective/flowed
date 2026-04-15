@@ -457,7 +457,7 @@ const MemberForm = ({m,stylists,days,onChange,onSave}) => {
   );
 };
 
-const MemberCard = ({m,stylists,onEdit,onRemove}) => {
+const MemberCard = ({m,stylists,onEdit,onRemove,confirming}) => {
   const sty=stylists.find(s=>s.id===m.stylistId);
   return (
     <div className="fade-in" style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:10,padding:"13px 17px",display:"flex",gap:13,alignItems:"flex-start",marginBottom:8}}>
@@ -472,9 +472,9 @@ const MemberCard = ({m,stylists,onEdit,onRemove}) => {
         {m.urls.length>0&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>{m.urls.map(u=><InspoThumb key={u} url={u} urls={m.urls}/>)}</div>}
         {m.notes&&<p style={{fontSize:12,color:"#6B6058",fontStyle:"italic",lineHeight:1.5}}>{m.notes}</p>}
       </div>
-      <div style={{display:"flex",gap:5,flexShrink:0}}>
-        <button onClick={onEdit} style={{padding:"5px 11px",background:"#F7EFDF",color:"#B8956A",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>Edit</button>
-        <button onClick={onRemove} style={{padding:"5px 9px",background:"#F8EDED",color:"#C06060",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>×</button>
+      <div style={{display:"flex",gap:5,flexShrink:0}} onTouchStart={e=>e.stopPropagation()} onMouseDown={e=>e.stopPropagation()}>
+        <button onClick={e=>{e.stopPropagation();onEdit();}} style={{padding:"5px 11px",background:"#F7EFDF",color:"#B8956A",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>Edit</button>
+        <button onClick={e=>{e.stopPropagation();onRemove();}} style={{padding:"5px 9px",background:confirming?"#C06060":"#F8EDED",color:confirming?"#fff":"#C06060",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif",transition:"all .15s"}}>{confirming?"Sure?":"×"}</button>
       </div>
     </div>
   );
@@ -489,7 +489,11 @@ const Step2 = ({members,setMembers,stylists,days,eventId,coupleName}) => {
   const startEdit=(id)=>{setDraft(members.find(m=>m.id===id));setEditing(id);};
   const changeField=(k,v)=>{const u={...draft,[k]:v};setDraft(u);setMembers(p=>p.map(m=>m.id===editing?u:m));};
   const save=()=>{setEditing(null);setDraft(null);};
-  const remove=(id)=>{const m=members.find(x=>x.id===id);if(!confirm(`Remove ${m?.name||"this person"} from the party?`)) return;setMembers(p=>p.filter(m=>m.id!==id));if(editing===id){setEditing(null);setDraft(null);}};
+  const [confirmRemove,setConfirmRemove]=useState(null);
+  const remove=(id)=>{
+    if(confirmRemove===id){setMembers(p=>p.filter(m=>m.id!==id));if(editing===id){setEditing(null);setDraft(null);}setConfirmRemove(null);}
+    else{setConfirmRemove(id);setTimeout(()=>setConfirmRemove(c=>c===id?null:c),3000);}
+  };
   const hairCt=members.filter(m=>m.services!=="makeup").length;
   const mkupCt=members.filter(m=>m.services!=="hair").length;
   const dragMember=useDragReorder(members,setMembers);
@@ -510,7 +514,7 @@ const Step2 = ({members,setMembers,stylists,days,eventId,coupleName}) => {
       )}
       {members.map((m,i)=>editing===m.id
         ?<MemberForm key={m.id} m={draft} stylists={stylists} days={days} onChange={changeField} onSave={save}/>
-        :<div key={m.id} {...dragMember(i)} style={{cursor:"grab"}}><MemberCard m={m} stylists={stylists} onEdit={()=>startEdit(m.id)} onRemove={()=>remove(m.id)}/></div>
+        :<div key={m.id} {...dragMember(i)} style={{cursor:"grab"}}><MemberCard m={m} stylists={stylists} onEdit={()=>startEdit(m.id)} onRemove={()=>remove(m.id)} confirming={confirmRemove===m.id}/></div>
       )}
       {editing===null&&<button onClick={startAdd} style={{width:"100%",padding:"13px",border:"1.5px dashed #D4C4B4",borderRadius:10,background:"transparent",color:"#A0988E",fontSize:14,cursor:"pointer",fontFamily:"'Jost',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}><span style={{fontSize:18,lineHeight:1}}>+</span> Add Party Member</button>}
       {eventId&&<div style={{display:"flex",justifyContent:"center",marginTop:20}}><ShareBtn eventId={eventId} coupleName={coupleName}/></div>}
@@ -542,11 +546,10 @@ const Step3 = ({stylists,setStylists,roster,addToRoster,updateRoster,removeFromR
     setEditId(null);
     setEditDraft(null);
   };
+  const [confirmDelete,setConfirmDelete]=useState(null);
   const deleteFromRoster=(id)=>{
-    const s=roster.find(x=>x.id===id);
-    if(!confirm(`Remove ${s?.name||"this person"} from the team? This applies to all events.`)) return;
-    removeFromRoster(id);
-    setStylists(p=>p.filter(x=>x.id!==id));
+    if(confirmDelete===id){removeFromRoster(id);setStylists(p=>p.filter(x=>x.id!==id));setConfirmDelete(null);}
+    else{setConfirmDelete(id);setTimeout(()=>setConfirmDelete(c=>c===id?null:c),3000);}
   };
   return (
     <div className="fade-up">
@@ -576,7 +579,7 @@ const Step3 = ({stylists,setStylists,roster,addToRoster,updateRoster,removeFromR
               </div>
               {editId!==s.id&&<div style={{display:"flex",gap:5}}>
                 <button onClick={()=>{setEditId(s.id);setEditDraft({...s});}} style={{padding:"5px 11px",background:"#F7EFDF",color:"#B8956A",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>Edit</button>
-                <button onClick={()=>deleteFromRoster(s.id)} style={{padding:"5px 9px",background:"#F8EDED",color:"#C06060",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif"}}>×</button>
+                <button onClick={()=>deleteFromRoster(s.id)} style={{padding:"5px 9px",background:confirmDelete===s.id?"#C06060":"#F8EDED",color:confirmDelete===s.id?"#fff":"#C06060",border:"none",borderRadius:5,fontSize:12,cursor:"pointer",fontFamily:"'Jost',sans-serif",transition:"all .15s"}}>{confirmDelete===s.id?"Sure?":"×"}</button>
               </div>}
             </div>
           );
