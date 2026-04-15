@@ -359,7 +359,7 @@ const Avatar = ({name,role,photo,size=38}) => {
     :<div style={{width:size,height:size,borderRadius:"50%",background:ri.bg,color:ri.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*.4,fontWeight:600,fontFamily:"'Cormorant Garamond',serif",flexShrink:0}}>{(name||"?")[0].toUpperCase()}</div>;
 };
 
-const MemberForm = ({m,stylists,days,onChange,onSave,onRemove}) => {
+const MemberForm = ({m,stylists,days,onChange,onSave}) => {
   const [urlIn,setUrlIn]=useState("");
   const [uploading,setUploading]=useState(false);
   const fileRef=useRef(null);
@@ -451,7 +451,6 @@ const MemberForm = ({m,stylists,days,onChange,onSave,onRemove}) => {
         <Field label="Notes for Stylist" col="1/-1"><textarea value={m.notes} onChange={e=>onChange("notes",e.target.value)} placeholder="Desired look, hair length & texture, allergies, style preferences…" style={{minHeight:60}}/></Field>
       </div>
       <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:10,paddingTop:10,borderTop:"1px solid #EDE6DE"}}>
-        <Btn variant="ghost" size="sm" onClick={onRemove}>Remove</Btn>
         <Btn size="sm" onClick={onSave} disabled={!m.name.trim()}>Save</Btn>
       </div>
     </div>
@@ -510,7 +509,7 @@ const Step2 = ({members,setMembers,stylists,days,eventId,coupleName}) => {
         </div>
       )}
       {members.map((m,i)=>editing===m.id
-        ?<MemberForm key={m.id} m={draft} stylists={stylists} days={days} onChange={changeField} onSave={save} onRemove={()=>remove(m.id)}/>
+        ?<MemberForm key={m.id} m={draft} stylists={stylists} days={days} onChange={changeField} onSave={save}/>
         :<div key={m.id} {...dragMember(i)} style={{cursor:"grab"}}><MemberCard m={m} stylists={stylists} onEdit={()=>startEdit(m.id)} onRemove={()=>remove(m.id)}/></div>
       )}
       {editing===null&&<button onClick={startAdd} style={{width:"100%",padding:"13px",border:"1.5px dashed #D4C4B4",borderRadius:10,background:"transparent",color:"#A0988E",fontSize:14,cursor:"pointer",fontFamily:"'Jost',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}><span style={{fontSize:18,lineHeight:1}}>+</span> Add Party Member</button>}
