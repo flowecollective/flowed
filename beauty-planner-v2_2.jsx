@@ -698,7 +698,7 @@ const DayTimeline = ({day,members,stylists,durations,totalDays}) => {
       <div className="grid-stats" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
         {[{l:"Party Size",v:dayMembers.length,icon:"👥"},{l:"Hair",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="hair"||sv==="both";}).length,icon:"💇‍♀️"},{l:"Makeup",v:dayMembers.filter(m=>{const sv=getMemberServices(m,day.id);return sv==="makeup"||sv==="both";}).length,icon:"💄"},{l:"Tracks",v:tracks.length,icon:"🗓"}].map(stat=>(
           <div key={stat.l} style={{background:"#fff",border:"1px solid #E8E0D8",borderRadius:10,padding:"13px 10px",textAlign:"center"}}>
-            <div style={{fontSize:16,marginBottom:3,filter:"grayscale(1) opacity(.6)"}}>{stat.icon}</div>
+            <div style={{fontSize:16,marginBottom:3,filter:"grayscale(1) brightness(1.2) sepia(1) hue-rotate(-15deg) saturate(.6) opacity(.75)"}}>{stat.icon}</div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,lineHeight:1}}>{stat.v}</div>
             <div style={{fontSize:11,color:"#9E9590",marginTop:3,letterSpacing:".04em"}}>{stat.l}</div>
           </div>
