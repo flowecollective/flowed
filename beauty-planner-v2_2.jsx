@@ -1298,7 +1298,7 @@ export default function App() {
     <div style={{minHeight:"100vh",background:"#FAF7F2",paddingBottom:60}}>
       <div className="top-bar" style={{background:"#1C1815",padding:"17px 32px",marginBottom:36,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{display:"flex",alignItems:"center",gap:16}}>
-          <button onClick={()=>setOpenId(null)} style={{background:"none",border:"none",color:"#6B6058",cursor:"pointer",fontFamily:"'Jost',sans-serif",fontSize:11,letterSpacing:".12em",textTransform:"uppercase",padding:0,display:"flex",alignItems:"center",gap:5}}>← Events</button>
+          <button onClick={()=>setOpenId(null)} style={{background:"none",border:"none",color:"#6B6058",cursor:"pointer",padding:0,display:"flex",alignItems:"center"}} title="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9.5L12 3l9 6.5"/><path d="M19 13v6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-6"/></svg></button>
           <div className="bar-logo" style={{width:1,height:20,background:"#3A3028"}}/>
           <div className="bar-logo">
             <div className="bar-brand" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:"#D4B896",letterSpacing:".14em"}}>FLOWE</div>
